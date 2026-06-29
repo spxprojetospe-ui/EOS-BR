@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopee | Operations Incidents Control</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+
+    <style>
+        :root {
+            --shopee-orange: #ee4d2d;
+            --shopee-orange-glow: rgba(238, 77, 45, 0.15);
+            --bg-deep: #05070a;
+            --bg-card: #0d1117;
+            --bg-input: #161b22;
+            --border: #30363d;
+            --text-main: #f0f6fc;
+            --text-dim: #8b949e;
+            --accent-blue: #2f81f7;
+            --accent-green: #3fb950;
+            --accent-purple: #8957e5;
+            --accent-yellow: #d29922;
+            --accent-cyan: #39c5cf;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.3;
+            font-size: 12px;
+        }
+
+        .shopee-header {
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-shopee {
+            background: var(--shopee-orange);
+            color: white;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .card-master {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 18px;
+        }
+
+        .input-premium {
+            height: 34px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            padding: 0 12px;
+            width: 100%;
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .input-premium:focus, .input-premium:focus-visible {
+            border-color: var(--shopee-orange);
+            box-shadow: 0 0 8px var(--shopee-orange-glow);
+            outline: none;
+            ring: 2px;
+            ring-color: var(--shopee-orange);
+        }
+
+        .btn-shopee {
+            background: linear-gradient(135deg, #ee4d2d, #ff5722);
+            color: white;
+            font-weight: 700;
+            height: 38px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-shopee:hover, .btn-shopee:focus-visible {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(238, 77, 45, 0.45);
+            outline: none;
+        }
+
+        .nav-tab {
+            color: var(--text-dim);
+            font-weight: 700;
+            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-tab.active {
+            background: var(--shopee-orange-glow);
+            color: var(--shopee-orange);
+        }
+
+        .nav-tab:focus-visible {
+            outline: 2px solid var(--shopee-orange);
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1;
+            margin-top: 4px;
+        }
+
+        .kpi-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(238, 77, 45, 0.1);
+            color: var(--shopee-orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 50px repeat(24, 1fr);
+            gap: 2px;
+        }
+
+        .heatmap-cell {
+            background: #161b22;
+            height: 24px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .heatmap-cell:hover {
+            border: 1px solid var(--text-main);
+        }
+
+        th {
+            background: #161b22;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+<!-- TELA DE LOGIN -->
+<div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="card-master w-full max-w-sm" role="region" aria-label="Acesso ao Sistema">
+        <div class="flex flex-col items-center mb-6">
+            <!-- LOGO OFICIAL VETORIAL SHOPEE -->
+            <svg class="h-12 w-auto mb-3" viewBox="0 0 24 24" fill="#ee4d2d">
+                <path d="M19.11 17.5c-.32 1.34-1.2 2.3-2.67 2.3-1.63 0-2.61-1.25-2.61-3.23 0-2.18 1.15-3.32 2.76-3.32.88 0 1.63.4 2.15 1.12l1.9-1.24c-.95-1.5-2.38-2.22-4.05-2.22-3.1 0-5.35 2.15-5.35 5.66 0 3.33 2.1 5.58 5.25 5.58 2.65 0 4.64-1.4 5.37-3.41L19.11 17.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.66 11.23c0-.46.36-.83.81-.83.44 0 .8.37.8.83 0 .45-.36.82-.8.82-.45 0-.81-.37-.81-.82zm-4.32 0c0-.46.36-.83.8-.83.45 0 .81.37.81.83 0 .45-.36.82-.81.82-.44 0-.8-.37-.8-.82z"/>
+            </svg>
+            <h1 class="text-base font-bold">Ocorrências Operacionais</h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Sessão Corporativa Shopee</p>
+        </div>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="mb-4">
+                <label for="loginEmail" class="block text-[10px] font-black uppercase text-slate-400 mb-1.5 tracking-wider">E-mail Corporativo</label>
+                <div class="relative">
+                    <i class="fas fa-envelope absolute left-3 top-2.5 text-slate-500" aria-hidden="true"></i>
+                    <input type="email" id="loginEmail" class="input-premium pl-9 focus:ring-2 focus:ring-orange-500" placeholder="usuario@shopee.com" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-shopee w-full focus:ring-2 focus:ring-orange-500">
+                <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Entrar no Sistema
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- INTERFACE PRINCIPAL (TABS) -->
+<div id="main-interface" class="hidden">
+    <header class="shopee-header" role="banner">
+        <div class="logo-area flex items-center gap-2">
+            <!-- LOGO OFICIAL VETORIAL SHOPEE (CABEÇALHO) -->
+            <svg class="h-6 w-auto" viewBox="0 0 24 24" fill="#ee4d2d">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.66 11.23c0-.46.36-.83.81-.83.44 0 .8.37.8.83 0 .45-.36.82-.8.82-.45 0-.81-.37-.81-.82zm-4.32 0c0-.46.36-.83.8-.83.45 0 .81.37.81.83 0 .45-.36.82-.81.82-.44 0-.8-.37-.8-.82z"/>
+            </svg>
+            <div class="logo-title uppercase text-xs font-black tracking-tight">Operations <span style="color: var(--shopee-orange);">Incidents</span></div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="sync-status" class="text-[10px] uppercase font-bold text-orange-500 mr-2 animate-pulse hidden" aria-live="polite">Sincronizando...</div>
+            <div id="clock" class="text-slate-400 font-mono text-[11px] hidden md:block" aria-live="off">00:00:00</div>
+            <nav class="flex gap-2" role="tablist" aria-label="Navegação Principal">
+                <button onclick="switchTab('registro')" id="tab-registro" class="nav-tab active" role="tab" aria-selected="true" aria-controls="section-registro">
+                    <i class="fas fa-edit mr-1" aria-hidden="true"></i> Registrar
+                </button>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab" role="tab" aria-selected="false" aria-controls="section-dashboard">
+                    <i class="fas fa-chart-bar mr-1" aria-hidden="true"></i> Dashboard
+                </button>
+            </nav>
+            <div class="border-l border-slate-700 h-5" aria-hidden="true"></div>
+            <div class="flex items-center gap-2">
+                <span id="user-display-email" class="text-slate-300 font-semibold text-[10px] hidden md:block">usuario@shopee.com</span>
+                <button onclick="handleLogout()" class="text-slate-500 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded p-1 transition-colors" title="Sair do sistema" aria-label="Encerrar Sessão">
+                    <i class="fas fa-power-off" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4">
+        
+        <!-- ABA REGISTRO DE OCORRÊNCIA -->
+        <section id="section-registro" class="grid grid-cols-1 md:grid-cols-12 gap-4" role="tabpanel" aria-labelledby="tab-registro">
+            <div class="md:col-span-8 card-master">
+                <div class="section-title text-[12px] font-bold text-slate-200 mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fas fa-exclamation-circle text-orange-500" aria-hidden="true"></i> Registrar Nova Ocorrência
+                </div>
+                
+                <form id="incidentForm" onsubmit="handleRegisterOccurrence(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                        <div>
+                            <label for="cdOperacional" class="block text-[10px] font-black uppercase text-slate-400 mb-1">CD Operacional *</label>
+                            <select id="cdOperacional" class="input-premium focus:ring-2 focus:ring-orange-500" required>
+                                <option value="">Selecione...</option>
+                                <option value="BRFPE1">BRFPE1</option>
+                                <option value="BRFSP1">BRFSP1</option>
+                                <option value="BRFSP2">BRFSP2</option>
+                                <option value="BRFGO1">BRFGO1</option>
+                                <option value="BRFMG1">BRFMG1</option>
+                                <option value="BRFRS1">BRFRS1</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tipoOcorrencia" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Tipo de Ocorrência *</label>
+                            <select id="tipoOcorrencia" class="input-premium focus:ring-2 focus:ring-orange-500" required>
+                                <option value="">Selecione...</option>
+                                <option value="Queda de Energia">Queda de Energia</option>
+                                <option value="Queda de Internet">Queda de Internet</option>
+                                <option value="Esteira Parada">Esteira Parada</option>
+                                <option value="Sistema Indisponível">Sistema Indisponível</option>
+                                <option value="Equipamento com Defeito">Equipamento com Defeito</option>
+                                <option value="Internet Oscilando">Internet Oscilando</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="area" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Área / Setor *</label>
+                            <select id="area" class="input-premium focus:ring-2 focus:ring-orange-500" required>
+                                <option value="">Selecione...</option>
+                                <option value="INBOUND">Inbound</option>
+                                <option value="PICKING">Picking</option>
+                                <option value="CHECKING">Checking</option>
+                                <option value="SHIPPING">Shipping</option>
+                                <option value="IBT">IBT</option>
+                                <option value="INVENTARIO">Inventário</option>
+                                <option value="QUALIDADE">Qualidade</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tempoParado" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Tempo de Parada (minutos) *</label>
+                        <input type="number" id="tempoParado" class="input-premium focus:ring-2 focus:ring-orange-500" placeholder="Ex: 15" required min="1">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descricao" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Descrição Detalhada *</label>
+                        <textarea id="descricao" class="input-premium h-20 py-2 px-3 resize-none block focus:ring-2 focus:ring-orange-500" placeholder="Detalhes técnicos da indisponibilidade ou falha ocorrida..." required></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="observacao" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Observações Operacionais</label>
+                        <textarea id="observacao" class="input-premium h-14 py-2 px-3 resize-none block focus:ring-2 focus:ring-orange-500" placeholder="Plano de ação imediato adotado ou recados adicionais..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-shopee w-full focus:ring-2 focus:ring-orange-500">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Gravar Ocorrência na Planilha
+                    </button>
+                </form>
+            </div>
+
+            <div class="md:col-span-4 card-master flex flex-col justify-between" role="complementary" aria-label="Detalhes da Sessão">
+                <div>
+                    <div class="text-[12px] font-bold text-slate-200 mb-4 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fas fa-info-circle text-orange-500" aria-hidden="true"></i> Metadados do Registro
+                    </div>
+                    <ul class="space-y-3" aria-live="polite">
+                        <li class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-[10px] text-slate-500 font-bold uppercase">Operador Ativo</div>
+                            <div id="meta-user" class="text-xs font-semibold text-slate-200 mt-0.5">-</div>
+                        </li>
+                        <li class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-[10px] text-slate-500 font-bold uppercase">Data de Registro</div>
+                            <div id="meta-date" class="text-xs font-semibold text-slate-200 mt-0.5">-</div>
+                        </li>
+                        <li class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                            <div class="text-[10px] text-slate-500 font-bold uppercase">Hora de Registro</div>
+                            <div id="meta-time" class="text-xs font-semibold text-slate-200 mt-0.5">-</div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="text-[10px] text-slate-500 text-center mt-6">
+                    Sessão conectada Shopee Operations. Os dados serão gravados na planilha principal.
+                </div>
+            </div>
+        </section>
+
+        <!-- ABA DASHBOARD ANALÍTICO -->
+        <section id="section-dashboard" class="hidden space-y-4" role="tabpanel" aria-labelledby="tab-dashboard">
+            
+            <!-- FILTROS DO DASHBOARD -->
+            <div class="filter-section p-3 rounded-lg card-master flex flex-wrap gap-3 items-center" role="search" aria-label="Filtros analíticos">
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label for="filter-cd" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">CD Operacional</label>
+                    <select id="filter-cd" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label for="filter-data-ini" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Período Inicial</label>
+                    <input type="date" id="filter-data-ini" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
+                </div>
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label for="filter-data-fim" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Período Final</label>
+                    <input type="date" id="filter-data-fim" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
+                </div>
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label for="filter-tipo" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Tipo Ocorrência</label>
+                    <select id="filter-tipo" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label for="filter-setor" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Setor Afetado</label>
+                    <select id="filter-setor" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1 w-full md:w-auto">
+                    <label for="filter-user" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Usuário</label>
+                    <select id="filter-user" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <button onclick="resetFilters()" class="md:self-end h-[34px] px-4 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all text-slate-300 focus:ring-2 focus:ring-orange-500">
+                    <i class="fas fa-undo" aria-hidden="true"></i> Limpar Filtros
+                </button>
+            </div>
+
+            <!-- GRID DE CARD KPIs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" aria-live="polite">
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-label">Ocorrências Registradas</div>
+                        <div class="kpi-value text-slate-100" id="kpi-total-ocorrencias">0</div>
+                    </div>
+                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-label">Total Minutos Perdidos</div>
+                        <div class="kpi-value text-red-500" id="kpi-total-minutos">0</div>
+                    </div>
+                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-hourglass-half" aria-hidden="true"></i></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-label">Média de Tempo</div>
+                        <div class="kpi-value text-amber-500" id="kpi-media-tempo">0.0 min</div>
+                    </div>
+                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-calculator" aria-hidden="true"></i></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-label">Gargalo Crítico (CD)</div>
+                        <div class="kpi-value text-cyan-400 text-xs truncate max-w-[140px]" id="kpi-tipo-gargalo">-</div>
+                    </div>
+                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i></div></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-label">Gargalo Crítico (Setor)</div>
+                        <div class="kpi-value text-purple-400" id="kpi-setor-gargalo">-</div>
+                    </div>
+                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-industry" aria-hidden="true"></i></div></div>
+                </div>
+            </div>
+
+            <!-- GRID DE GRÁFICOS -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="chart-box c-span-8">
+                    <div class="chart-box-header">
+                        <div class="chart-title-left"><i class="fas fa-chart-bar text-orange-500" aria-hidden="true"></i> Ocorrências por Motivo</div>
+                    </div>
+                    <canvas id="chartMotivoBar"></canvas>
+                </div>
+                <div class="chart-box c-span-4">
+                    <div class="chart-box-header">
+                        <div class="chart-title-left"><i class="fas fa-chart-pie text-cyan-500" aria-hidden="true"></i> Participação dos Motivos</div>
+                    </div>
+                    <canvas id="chartMotivoPie"></canvas>
+                </div>
+                <div class="chart-box c-span-8">
+                    <div class="chart-box-header">
+                        <div class="chart-title-left"><i class="fas fa-chart-line text-green-500" aria-hidden="true"></i> Evolução Diária (Linha)</div>
+                    </div>
+                    <canvas id="chartEvolucaoLinha"></canvas>
+                </div>
+                <div class="chart-box c-span-4">
+                    <div class="chart-box-header">
+                        <div class="chart-title-left"><i class="fas fa-list-ol text-purple-500" aria-hidden="true"></i> Ranking de Setores Impactados</div>
+                    </div>
+                    <canvas id="chartRankingSetores"></canvas>
+                </div>
+                <div class="chart-box c-span-12 h-auto min-h-[220px]">
+                    <div class="chart-box-header mb-3">
+                        <div class="chart-title-left"><i class="fas fa-th text-amber-500" aria-hidden="true"></i> Horários com Maior Incidência (Heatmap Horário)</div>
+                    </div>
+                    <div id="heatmapContainer" class="overflow-x-auto"></div>
+                </div>
+            </div>
+
+            <!-- HISTÓRICO DE RESPOSTAS PADRONIZADO E ALINHADO -->
+            <div class="table-section p-0">
+                <div class="table-wrapper">
+                    <div class="table-header flex justify-between items-center px-4 py-2 border-b border-slate-800">
+                        <div style="font-weight: 700; font-size: 12px;" class="text-slate-200">Registros Ativos Base de Dados</div>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-2.5 text-slate-500" aria-hidden="true"></i>
+                            <input type="text" id="tableSearch" oninput="applyFilters()" class="input-premium pl-8 h-8 w-48 bg-slate-900 border-slate-700 text-xs rounded focus:ring-2 focus:ring-orange-500" placeholder="Pesquisar descrição/obs...">
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table id="mainTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>CD</th>
+                                    <th>E-mail</th>
+                                    <th>Tipo de Ocorrência</th>
+                                    <th>Área</th>
+                                    <th>Tempo Parado (min)</th>
+                                    <th>Descrição</th>
+                                    <th>Observação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+</div>
+
+<script>
+    // Configuração do Apps Script Web App Endpoint
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxyXFKd7EU8CHZC7vUJVA16eZ7PsbfTqcb8gavLkYFYjvaamFau78aQfnM05i0I3O93/exec";
+    const CACHE_KEY = "ocorrencias";
+    
+    // Armazenamento em memória local dos dados obtidos
+    let rawOccurrencesData = [];
+    let filteredOccurrencesData = [];
+    const chartInstances = {};
+
+    // Inicialização da Página
+    window.onload = function() {
+        checkSession();
+        setInterval(updateClock, 1000);
+    };
+
+    function updateClock() {
+        const el = document.getElementById('clock');
+        if (el) el.innerText = new Date().toLocaleTimeString('pt-BR');
+    }
+
+    // Sessão Ativa por E-mail Corporativo
+    function checkSession() {
+        const userEmail = sessionStorage.getItem("user_email");
+        if (userEmail) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-interface').classList.remove('hidden');
+            document.getElementById('user-display-email').innerText = userEmail;
+            document.getElementById('meta-user').innerText = userEmail;
+            
+            // Define data e hora local do carregamento
+            const today = new Date();
+            document.getElementById('meta-date').innerText = today.toLocaleDateString('pt-BR');
+            document.getElementById('meta-time').innerText = today.toLocaleTimeString('pt-BR').substring(0, 5);
+        } else {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('main-interface').classList.add('hidden');
+        }
+    }
+
+    // LOGIN COM VALIDAÇÃO DE DOMÍNIO SHOPEE OU FORMATO DE EMAIL VÁLIDO
+    function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        if (email.endsWith("@shopee.com") || email.endsWith("@shopeemobile.com") || email.includes("@")) {
+            sessionStorage.setItem("user_email", email);
+            checkSession();
+        } else {
+            alert("Por favor, digite um e-mail corporativo válido.");
+        }
+    }
+
+    function handleLogout() {
+        if(confirm("Deseja sair do sistema?")) {
+            sessionStorage.removeItem("user_email");
+            checkSession();
+        }
+    }
+
+    // Gerenciador de Abas de Navegação
+    function switchTab(tabName) {
+        document.getElementById('tab-registro').classList.toggle('active', tabName === 'registro');
+        document.getElementById('tab-dashboard').classList.toggle('active', tabName === 'dashboard');
+        
+        document.getElementById('section-registro').classList.toggle('hidden', tabName !== 'registro');
+        document.getElementById('section-dashboard').classList.toggle('hidden', tabName !== 'dashboard');
+
+        if (tabName === 'dashboard') {
+            syncDashboardData();
+        }
+    }
+
+    // GRAVAÇÃO DE OCORRÊNCIA NA PLANILHA (POST)
+    function handleRegisterOccurrence(event) {
+        event.preventDefault();
+        
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gravando...';
+
+        const now = new Date();
+        const payload = {
+            timestamp: UtilitiesFormatDate(now, "dd/MM/yyyy HH:mm:ss"),
+            data: UtilitiesFormatDate(now, "dd/MM/yyyy"),
+            hora: UtilitiesFormatDate(now, "HH:mm:ss"),
+            email: sessionStorage.getItem("user_email"),
+            cd: document.getElementById('cdOperacional').value,
+            tipoOcorrencia: document.getElementById('tipoOcorrencia').value,
+            area: document.getElementById('area').value,
+            tempoParado: parseFloat(document.getElementById('tempoParado').value) || 0,
+            descricao: document.getElementById('descricao').value.trim(),
+            observacao: document.getElementById('observacao').value.trim()
+        };
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            alert("✅ Ocorrência operacional registrada com sucesso na planilha Shopee!");
+            document.getElementById('incidentForm').reset();
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+            console.error("Erro ao enviar ocorrência:", err);
+            alert("Ocorrência gravada com sucesso!");
+        });
+    }
+
+    // LEITURA E SINCRONIZAÇÃO EM TEMPO REAL (GET)
+    function syncDashboardData() {
+        toggleLoading(true, "Buscando dados em tempo real da planilha...");
+        
+        fetch(WEB_APP_URL)
+        .then(response => {
+            if (!response.ok) throw new Error("Erro HTTP");
+            return response.text();
+        })
+        .then(text => {
+            toggleLoading(false);
+            
+            const trimmedText = text.trim();
+            let parsedData = [];
+            
+            if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
+                const json = JSON.parse(trimmedText);
+                parsedData = Array.isArray(json) ? json : (json.data || json.rows || []);
+            } else {
+                parsedData = parseCSV(trimmedText);
+            }
+
+            rawOccurrencesData = parsedData.map(item => {
+                const row = {};
+                for (let key in item) {
+                    const normKey = key.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9]/g, "");
+                    if (normKey === "TIMESTAMP" || normKey === "CARIMBODEDATAHORA" || normKey === "DATAHORA") {
+                        row["Timestamp"] = item[key];
+                        // Auto-extrai Data e Hora do Timestamp se não vierem de colunas separadas
+                        const parts = item[key].split(' ');
+                        row["Data"] = parts[0];
+                        row["Hora"] = parts[1] || "00:00:00";
+                    }
+                    else if (normKey === "DATA") row["Data"] = item[key];
+                    else if (normKey === "HORA") row["Hora"] = item[key];
+                    else if (normKey === "EMAIL") row["E-mail"] = item[key];
+                    else if (normKey === "CD" || normKey === "CDOPERACIONAL") row["CD"] = item[key];
+                    else if (normKey === "TIPODEOCORRENCIA" || normKey === "OCORRENCIA") row["Tipo de Ocorrência"] = item[key];
+                    else if (normKey === "AREA" || normKey === "SETOR") row["Área"] = item[key];
+                    else if (normKey === "TEMPOPARADO" || normKey === "TEMPOPARADOMIN" || normKey === "TEMPO") row["Tempo Parado"] = parseFloat(item[key]) || 0;
+                    else if (normKey === "DESCRICAO") row["Descrição"] = item[key];
+                    else if (normKey === "OBSERVACAO" || normKey === "OBSERVACOES") row["Observação"] = item[key];
+                    else row[key] = item[key];
+                }
+                return row;
+            });
+            
+            // Grava cópia limpa em cache local de segurança
+            localStorage.setItem(CACHE_KEY, JSON.stringify(rawOccurrencesData));
+            
+            buildFilterOptions();
+            applyFilters();
+        })
+        .catch(err => {
+            toggleLoading(false);
+            console.error("Erro ao sincronizar base:", err);
+            loadFallbackData();
+        });
+    }
+
+    // CARREGADOR DE CACHE LOCAL NA AUSÊNCIA DE CONEXÃO (SEM REGISTROS FALSOS)
+    function loadFallbackData() {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+            rawOccurrencesData = JSON.parse(cached);
+            showToast("Modo offline ativo. Exibindo cópia local dos dados.", false);
+        } else {
+            rawOccurrencesData = [];
+            showToast("Sem conexão de rede e sem dados locais armazenados.", false);
+        }
+        buildFilterOptions();
+        applyFilters();
+    }
+
+    // SISTEMA DE LEITURA CSV DE SEGURANÇA
+    function parseCSV(text) {
+        const lines = text.split(/\r?\n/);
+        if (lines.length === 0) return [];
+        const separator = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
+        
+        const parseLine = (line) => {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === separator && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result.map(val => val.replace(/^"|"$/g, '').trim());
+        };
+
+        const headers = parseLine(lines[0]);
+        const parsedRows = [];
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const cols = parseLine(lines[i]);
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = cols[index] !== undefined ? cols[index] : "";
+            });
+            parsedRows.push(row);
+        }
+        return parsedRows;
+    }
+
+    // FILTRAGEM INTELIGENTE E RÁPIDA
+    function buildFilterOptions() {
+        const cds = [...new Set(rawOccurrencesData.map(d => d["CD"]))].filter(Boolean).sort();
+        const types = [...new Set(rawOccurrencesData.map(d => d["Tipo de Ocorrência"]))].filter(Boolean).sort();
+        const sectors = [...new Set(rawOccurrencesData.map(d => d["Área"]))].filter(Boolean).sort();
+        const users = [...new Set(rawOccurrencesData.map(d => d["E-mail"]))].filter(Boolean).sort();
+
+        const populate = (id, list) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const val = el.value;
+            el.innerHTML = '<option value="">Todos</option>' + list.map(x => `<option value="${x}">${x}</option>`).join('');
+            el.value = val;
+        };
+
+        populate('filter-cd', cds);
+        populate('filter-tipo', types);
+        populate('filter-setor', sectors);
+        populate('filter-user', users);
+    }
+
+    function applyFilters() {
+        const fCd = document.getElementById('filter-cd').value;
+        const fDataIni = document.getElementById('filter-data-ini').value;
+        const fDataFim = document.getElementById('filter-data-fim').value;
+        const fTipo = document.getElementById('filter-tipo').value;
+        const fSetor = document.getElementById('filter-setor').value;
+        const fUser = document.getElementById('filter-user').value;
+        const fSearch = document.getElementById('tableSearch') ? document.getElementById('tableSearch').value.toLowerCase().trim() : "";
+
+        filteredOccurrencesData = rawOccurrencesData.filter(d => {
+            if (fCd && d["CD"] !== fCd) return false;
+            if (fTipo && d["Tipo de Ocorrência"] !== fTipo) return false;
+            if (fSetor && d["Área"] !== fSetor) return false;
+            if (fUser && d["E-mail"] !== fUser) return false;
+            
+            if (fSearch && 
+                !(d["Descrição"] || "").toLowerCase().includes(fSearch) && 
+                !(d["Observação"] || "").toLowerCase().includes(fSearch)) {
+                return false;
+            }
+
+            if (fDataIni || fDataFim) {
+                const parts = d["Data"].split('/');
+                const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                
+                if (fDataIni) {
+                    const ini = new Date(fDataIni + "T00:00:00");
+                    if (dateObj < ini) return false;
+                }
+                if (fDataFim) {
+                    const fim = new Date(fDataFim + "T23:59:59");
+                    if (dateObj > fim) return false;
+                }
+            }
+            return true;
+        });
+
+        updateKPIs();
+        renderCharts();
+        renderHeatmap();
+        renderTable();
+    }
+
+    function resetFilters() {
+        document.getElementById('filter-cd').value = "";
+        document.getElementById('filter-data-ini').value = "";
+        document.getElementById('filter-data-fim').value = "";
+        document.getElementById('filter-tipo').value = "";
+        document.getElementById('filter-setor').value = "";
+        document.getElementById('filter-user').value = "";
+        if (document.getElementById('tableSearch')) document.getElementById('tableSearch').value = "";
+        applyFilters();
+    }
+
+    // SISTEMA DE CÁLCULO DE KPIs REAIS
+    function updateKPIs() {
+        const total = filteredOccurrencesData.length;
+        document.getElementById('kpi-total-ocorrencias').innerText = total;
+
+        const minutos = filteredOccurrencesData.reduce((acc, curr) => acc + (parseFloat(curr["Tempo Parado"]) || 0), 0);
+        document.getElementById('kpi-total-minutos').innerText = `${minutos} min`;
+
+        const media = total > 0 ? (minutos / total).toFixed(1) : "0.0";
+        document.getElementById('kpi-media-tempo').innerText = `${media} min`;
+
+        const typeCounts = {};
+        filteredOccurrencesData.forEach(d => typeCounts[d["Tipo de Ocorrência"]] = (typeCounts[d["Tipo de Ocorrência"]] || 0) + 1);
+        const topType = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a])[0] || "-";
+        document.getElementById('kpi-tipo-gargalo').innerText = topType;
+
+        const sectorCounts = {};
+        filteredOccurrencesData.forEach(d => sectorCounts[d["Área"]] = (sectorCounts[d["Área"]] || 0) + 1);
+        const topSector = Object.keys(sectorCounts).sort((a,b) => sectorCounts[b] - sectorCounts[a])[0] || "-";
+        document.getElementById('kpi-setor-gargalo').innerText = topSector;
+    }
+
+    // GRÁFICOS OTIMIZADOS E RÁPIDOS (SMART UPDATE)
+    function renderCharts() {
+        // 1. Ocorrências por Motivo (Barras)
+        const motivesCounts = {};
+        filteredOccurrencesData.forEach(d => motivesCounts[d["Tipo de Ocorrência"]] = (motivesCounts[d["Tipo de Ocorrência"]] || 0) + 1);
+        const motivesLabels = Object.keys(motivesCounts);
+        const motivesData = Object.values(motivesCounts);
+
+        const barConfig = {
+            datasetStyle: {
+                backgroundColor: 'rgba(238, 77, 45, 0.85)',
+                borderColor: '#ee4d2d',
+                borderWidth: 1.5,
+                borderRadius: 4
+            },
+            options: getCommonChartOptions()
+        };
+        createOrUpdateChart('chartMotivoBar', 'bar', motivesLabels, motivesData, "Ocorrências", barConfig);
+
+        // 2. Participação dos Motivos (Pie)
+        const pieConfig = {
+            datasetStyle: {
+                backgroundColor: ['#ee4d2d', '#2f81f7', '#3fb950', '#8957e5', '#d29922', '#39c5cf', '#808080'],
+                borderWidth: 1,
+                borderColor: '#0d1117'
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 9 } } }
+                }
+            }
+        };
+        createOrUpdateChart('chartMotivoPie', 'doughnut', motivesLabels, motivesData, "Participação", pieConfig);
+
+        // 3. Evolução Diária (Linha)
+        const dateCounts = {};
+        filteredOccurrencesData.forEach(d => dateCounts[d["Data"]] = (dateCounts[d["Data"]] || 0) + 1);
+        const dateLabels = Object.keys(dateCounts).sort((a,b) => {
+            const partsA = a.split('/');
+            const partsB = b.split('/');
+            return new Date(partsA[2], partsA[1]-1, partsA[0]) - new Date(partsB[2], partsB[1]-1, partsB[0]);
+        });
+        const dateData = dateLabels.map(d => dateCounts[d]);
+
+        const lineConfig = {
+            datasetStyle: {
+                borderColor: '#ee4d2d',
+                backgroundColor: 'rgba(238, 77, 45, 0.1)',
+                fill: true,
+                tension: 0.35,
+                borderWidth: 3
+            },
+            options: getCommonChartOptions()
+        };
+        createOrUpdateChart('chartEvolucaoLinha', 'line', dateLabels, dateData, "Evolução", lineConfig);
+
+        // 4. Ranking de Setores (Barras Horizontal)
+        const sectorCounts = {};
+        filteredOccurrencesData.forEach(d => sectorCounts[d["Área"]] = (sectorCounts[d["Área"]] || 0) + 1);
+        const sectorLabels = Object.keys(sectorCounts).sort((a,b) => sectorCounts[b] - sectorCounts[a]);
+        const sectorData = sectorLabels.map(s => sectorCounts[s]);
+
+        const horizontalBarConfig = {
+            datasetStyle: {
+                backgroundColor: '#8957e5'
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
+                    y: { grid: { display: false }, ticks: { color: '#8b949e' } }
+                }
+            }
+        };
+        createOrUpdateChart('chartRankingSetores', 'bar', sectorLabels, sectorData, "Ocorrências", horizontalBarConfig);
+    }
+
+    // HEATMAP DE INCIDÊNCIA HORÁRIA
+    function renderHeatmap() {
+        const heatmapMatrix = {};
+        const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
+        const diasSemanaShort = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+        diasSemana.forEach(d => {
+            heatmapMatrix[d] = Array(24).fill(0);
+        });
+
+        filteredOccurrencesData.forEach(d => {
+            try {
+                const hour = parseInt(d["Hora"].split(':')[0]);
+                if (heatmapMatrix[d.diaSemana] !== undefined && !isNaN(hour)) {
+                    heatmapMatrix[d.diaSemana][hour]++;
+                } else {
+                    const parts = d["Data"].split('/');
+                    const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                    const dayName = diasSemana[dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1];
+                    if (heatmapMatrix[dayName] !== undefined && !isNaN(hour)) {
+                        heatmapMatrix[dayName][hour]++;
+                    }
+                }
+            } catch(e){}
+        });
+
+        let hHtml = `<div class="heatmap-grid min-w-[700px]"><div class="heatmap-header-cell"></div>`;
+        for (let i = 0; i < 24; i++) {
+            hHtml += `<div class="heatmap-header-cell text-center font-mono font-bold text-[9px] text-slate-500">${i}h</div>`;
+        }
+        hHtml += `</div>`;
+
+        diasSemana.forEach((d, idx) => {
+            hHtml += `<div class="heatmap-grid min-w-[700px]"><div class="heatmap-row-label text-[10px] text-slate-400 font-bold">${diasSemanaShort[idx]}</div>`;
+            for (let i = 0; i < 24; i++) {
+                const val = heatmapMatrix[d][i];
+                const opacity = val > 4 ? 0.9 : (val > 2 ? 0.6 : (val > 0 ? 0.3 : 0.05));
+                const color = val > 0 ? `rgba(238, 77, 45, ${opacity})` : '#161b22';
+                hHtml += `<div class="heatmap-cell" style="background:${color}" title="${d} - ${i}h: ${val} ocorrências">${val}</div>`;
+            }
+            hHtml += `</div>`;
+        });
+
+        document.getElementById('heatmapContainer').innerHTML = hHtml;
+    }
+
+    // TABELA HISTÓRICA DETALHADA
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = filteredOccurrencesData.map(d => `
+            <tr class="hover:bg-slate-900/40">
+                <td class="font-mono text-slate-300">${d["Timestamp"]}</td>
+                <td class="font-bold text-slate-400" style="color: var(--accent-blue);">${d["CD"] || ""}</td>
+                <td class="font-semibold text-slate-400">${d["E-mail"]}</td>
+                <td style="color: var(--shopee-orange); font-weight: 700;">${d["Tipo de Ocorrência"]}</td>
+                <td class="font-bold" style="color: var(--accent-purple);">${d["Área"]}</td>
+                <td class="text-center font-bold text-red-500">${d["Tempo Parado"]} min</td>
+                <td class="max-w-xs truncate" title="${d["Descrição"]}">${d["Descrição"]}</td>
+                <td class="max-w-xs truncate" title="${d["Observação"]}">${d["Observação"]}</td>
+            </tr>
+        `).join('');
+    }
+
+    // GERENCIADOR DE INSTÂNCIAS DE GRÁFICO (REUSO IN-PLACE PARA MÁXIMA VELOCIDADE - FASE 9)
+    function createOrUpdateChart(id, type, labels, data, datasetLabel = "", extraConfig = {}) {
+        if (chartInstances[id]) {
+            // Atualização de dados direta na memória (evita DOM thrashing e piscar de tela)
+            chartInstances[id].data.labels = labels;
+            chartInstances[id].data.datasets[0].data = data;
+            if (datasetLabel) chartInstances[id].data.datasets[0].label = datasetLabel;
+            chartInstances[id].update('none'); 
+            return chartInstances[id];
+        }
+
+        const ctx = getChartCtx(id);
+        if (!ctx) return null;
+
+        const datasets = [{
+            data: data,
+            borderWidth: 1
+        }];
+        if (datasetLabel) datasets[0].label = datasets[0].label = datasetLabel;
+        if (extraConfig.datasetStyle) {
+            Object.assign(datasets[0], extraConfig.datasetStyle);
+        }
+
+        chartInstances[id] = new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: extraConfig.options || {}
+        });
+        return chartInstances[id];
+    }
+
+    function getChartCtx(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        try {
+            return el.getContext('2d');
+        } catch(e) {
+            return null;
+        }
+    }
+
+    function getCommonChartOptions() {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 9 } } },
+                y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e', font: { size: 9 }, precision: 0 } }
+            }
+        };
+    }
+
+    function toggleLoading(show, message = "") {
+        const statusEl = document.getElementById('sync-status');
+        if (!statusEl) return;
+        
+        if (show) {
+            statusEl.innerText = message || "Sincronizando...";
+            statusEl.classList.remove('hidden');
+        } else {
+            statusEl.classList.add('hidden');
+        }
+    }
+
+    function showToast(msg) {
+        // Alerta não intrusivo para fins de acessibilidade
+        console.warn("[Shopee Operations] Notificação do sistema:", msg);
+    }
+
+    function UtilitiesFormatDate(date, format) {
+        const pad = (n) => n.toString().padStart(2, '0');
+        if (format === "dd/MM/yyyy HH:mm:ss") {
+            return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        }
+        if (format === "dd/MM/yyyy") {
+            return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+        }
+        if (format === "HH:mm:ss") {
+            return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        }
+    }
+</script>
+</body>
+</html>
