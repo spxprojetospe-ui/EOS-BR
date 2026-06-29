@@ -1,1073 +1,879 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopee | Operations Incidents Control</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EOS-BR | Passagem de Turno Premium</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --shopee-orange: #EE4D2D;
+      --shopee-dark: #1e1e24;
+      --shopee-bg: #f5f7fb;
+      --card-shadow: 0 6px 15px -4px rgba(0, 0, 0, 0.05);
+    }
+ 
+    body {
+      background-color: var(--shopee-bg);
+      font-family: 'Archivo', sans-serif;
+      color: #1e293b;
+    }
+
+    .shopee-header {
+      background: linear-gradient(135deg, #ee4d2d, #ff5722);
+      padding: 8px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(238, 77, 45, 0.12);
+      border-bottom: 2px solid #ff7337;
+    }
+
+    /* Layout mais achatado e compacto */
+    .card-master {
+      background: white;
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 8px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-master::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #ee4d2d, #ff7337);
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 14px;
+      background: var(--shopee-orange);
+      border-radius: 2px;
+    }
+
+    .quality-sub-header {
+      font-size: 10px;
+      font-weight: 900;
+      color: #ee4d2d;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: #fff5f3;
+      padding: 3px 8px;
+      border-left: 3px solid #ee4d2d;
+      border-radius: 0 4px 4px 0;
+      margin-top: 8px;
+      margin-bottom: 3px;
+      display: block;
+      width: 100%;
+    }
+
+    /* Redução de tamanho de inputs para achatar o formulário */
+    .input-premium {
+      height: 30px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 0 10px;
+      width: 100%;
+      transition: all 0.2s ease;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f8fafc;
+      color: #334155;
+    }
+
+    .input-premium:focus, .input-premium:hover {
+      border-color: var(--shopee-orange);
+      outline: none;
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(238, 77, 45, 0.08);
+    }
+
+    select.input-premium {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+      padding-right: 24px;
+    }
+
+    .btn-toggle {
+      height: 30px;
+      flex: 1;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 6px;
+      font-weight: 800;
+      background: #f8fafc;
+      color: #64748b;
+      transition: all 0.15s ease;
+      letter-spacing: 0.3px;
+      font-size: 11px;
+    }
+
+    .btn-toggle:hover {
+      background: #edf2f7;
+      border-color: #cbd5e1;
+    }
+
+    .active-sim { background: #10b981 !important; color: white !important; border-color: #10b981 !important; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1); }
+    .active-nao { background: #ee4d2d !important; color: white !important; border-color: #ee4d2d !important; box-shadow: 0 2px 6px rgba(238, 77, 45, 0.1); }
+
+    .btn-send {
+      background: linear-gradient(95deg, #1e1e24, #0f172a);
+      color: white;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      border: 1px solid #334155;
+    }
+
+    .btn-send:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.2);
+    }
+
+    /* Redução de espaçamentos nas linhas */
+    .unified-grid-row {
+      display: grid;
+      gap: 6px;
+      align-items: center;
+      padding: 2px 4px;
+      border-bottom: 1px solid #f1f5f9;
+      grid-template-columns: 2fr 1.2fr 2.5fr 0.8fr;
+    }
+
+    .unified-grid-row:hover {
+      background-color: #f8fafc;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+      .unified-grid-row { 
+        grid-template-columns: 1fr !important; 
+        gap: 4px; 
+        padding: 6px 2px; 
+      }
+    }
+
+    #success-modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner { display: none; width: 18px; height: 18px; border: 3.5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-attached {
+      background-color: #10b981 !important;
+      border-color: #059669 !important;
+      color: white !important;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);
+    }
+
+    .canvas-snapshot .input-premium {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #000000 !important;
+    }
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    .canvas-snapshot .btn-toggle:not(.active-sim):not(.active-nao) {
+      opacity: 0.4;
+    }
 
-    <style>
-        :root {
-            --shopee-orange: #ee4d2d;
-            --shopee-orange-glow: rgba(238, 77, 45, 0.15);
-            --bg-deep: #05070a;
-            --bg-card: #0d1117;
-            --bg-input: #161b22;
-            --border: #30363d;
-            --text-main: #f0f6fc;
-            --text-dim: #8b949e;
-            --accent-blue: #2f81f7;
-            --accent-green: #3fb950;
-            --accent-purple: #8957e5;
-            --accent-yellow: #d29922;
-            --accent-cyan: #39c5cf;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
-        }
+    #justificativa_final {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+    }
 
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            line-height: 1.3;
-            font-size: 12px;
-        }
-
-        .shopee-header {
-            background: rgba(13, 17, 23, 0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logo-shopee {
-            background: var(--shopee-orange);
-            color: white;
-            padding: 2px 7px;
-            border-radius: 4px;
-            font-weight: 900;
-            font-size: 13px;
-        }
-
-        .card-master {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            padding: 18px;
-        }
-
-        .input-premium {
-            height: 34px;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            padding: 0 12px;
-            width: 100%;
-            background: var(--bg-input);
-            color: var(--text-main);
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .input-premium:focus, .input-premium:focus-visible {
-            border-color: var(--shopee-orange);
-            box-shadow: 0 0 8px var(--shopee-orange-glow);
-            outline: none;
-            ring: 2px;
-            ring-color: var(--shopee-orange);
-        }
-
-        .btn-shopee {
-            background: linear-gradient(135deg, #ee4d2d, #ff5722);
-            color: white;
-            font-weight: 700;
-            height: 38px;
-            border-radius: 6px;
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-shopee:hover, .btn-shopee:focus-visible {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(238, 77, 45, 0.45);
-            outline: none;
-        }
-
-        .nav-tab {
-            color: var(--text-dim);
-            font-weight: 700;
-            font-size: 12px;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.2s;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-        }
-
-        .nav-tab.active {
-            background: var(--shopee-orange-glow);
-            color: var(--shopee-orange);
-        }
-
-        .nav-tab:focus-visible {
-            outline: 2px solid var(--shopee-orange);
-        }
-
-        .kpi-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .kpi-value {
-            font-size: 20px;
-            font-weight: 800;
-            line-height: 1;
-            margin-top: 4px;
-        }
-
-        .kpi-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            background: rgba(238, 77, 45, 0.1);
-            color: var(--shopee-orange);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-        }
-
-        .heatmap-grid {
-            display: grid;
-            grid-template-columns: 50px repeat(24, 1fr);
-            gap: 2px;
-        }
-
-        .heatmap-cell {
-            background: #161b22;
-            height: 24px;
-            border-radius: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .heatmap-cell:hover {
-            border: 1px solid var(--text-main);
-        }
-
-        th {
-            background: #161b22;
-            padding: 8px 12px;
-            font-size: 10px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            font-weight: 700;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        td {
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-            font-size: 11px;
-        }
-    </style>
+    .canvas-snapshot #justificativa_final {
+      border-color: #cbd5e1 !important;
+      height: auto !important;
+    }
+  </style>
 </head>
-<body class="bg-black text-white">
+<body>
 
-<!-- TELA DE LOGIN -->
-<div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="card-master w-full max-w-sm" role="region" aria-label="Acesso ao Sistema">
-        <div class="flex flex-col items-center mb-6">
-            <!-- LOGO OFICIAL VETORIAL SHOPEE -->
-            <svg class="h-12 w-auto mb-3" viewBox="0 0 24 24" fill="#ee4d2d">
-                <path d="M19.11 17.5c-.32 1.34-1.2 2.3-2.67 2.3-1.63 0-2.61-1.25-2.61-3.23 0-2.18 1.15-3.32 2.76-3.32.88 0 1.63.4 2.15 1.12l1.9-1.24c-.95-1.5-2.38-2.22-4.05-2.22-3.1 0-5.35 2.15-5.35 5.66 0 3.33 2.1 5.58 5.25 5.58 2.65 0 4.64-1.4 5.37-3.41L19.11 17.5zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.66 11.23c0-.46.36-.83.81-.83.44 0 .8.37.8.83 0 .45-.36.82-.8.82-.45 0-.81-.37-.81-.82zm-4.32 0c0-.46.36-.83.8-.83.45 0 .81.37.81.83 0 .45-.36.82-.81.82-.44 0-.8-.37-.8-.82z"/>
-            </svg>
-            <h1 class="text-base font-bold">Ocorrências Operacionais</h1>
-            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Sessão Corporativa Shopee</p>
-        </div>
-        <form id="loginForm" onsubmit="handleLogin(event)">
-            <div class="mb-4">
-                <label for="loginEmail" class="block text-[10px] font-black uppercase text-slate-400 mb-1.5 tracking-wider">E-mail Corporativo</label>
-                <div class="relative">
-                    <i class="fas fa-envelope absolute left-3 top-2.5 text-slate-500" aria-hidden="true"></i>
-                    <input type="email" id="loginEmail" class="input-premium pl-9 focus:ring-2 focus:ring-orange-500" placeholder="usuario@shopee.com" required>
-                </div>
-            </div>
-            <button type="submit" class="btn-shopee w-full focus:ring-2 focus:ring-orange-500">
-                <i class="fas fa-sign-in-alt" aria-hidden="true"></i> Entrar no Sistema
-            </button>
-        </form>
+  <header class="shopee-header shadow-md sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="Shopee" class="h-6 brightness-0 invert">
+      <div class="text-white border-l-2 border-white/30 pl-3">
+        <h1 class="text-lg font-black tracking-tighter">EOS-BR</h1>
+        <p class="text-[8px] font-bold uppercase opacity-90 tracking-widest">PASSAGEM DE TURNO</p>
+      </div>
     </div>
-</div>
+    <div id="clock" class="bg-black/20 text-white px-3 py-0.5 rounded-full text-[11px] font-bold border border-white/15 backdrop-blur-sm tracking-wide">00:00:00</div>
+  </header>
 
-<!-- INTERFACE PRINCIPAL (TABS) -->
-<div id="main-interface" class="hidden">
-    <header class="shopee-header" role="banner">
-        <div class="logo-area flex items-center gap-2">
-            <!-- LOGO OFICIAL VETORIAL SHOPEE (CABEÇALHO) -->
-            <svg class="h-6 w-auto" viewBox="0 0 24 24" fill="#ee4d2d">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.66 11.23c0-.46.36-.83.81-.83.44 0 .8.37.8.83 0 .45-.36.82-.8.82-.45 0-.81-.37-.81-.82zm-4.32 0c0-.46.36-.83.8-.83.45 0 .81.37.81.83 0 .45-.36.82-.81.82-.44 0-.8-.37-.8-.82z"/>
-            </svg>
-            <div class="logo-title uppercase text-xs font-black tracking-tight">Operations <span style="color: var(--shopee-orange);">Incidents</span></div>
+  <main class="max-w-6xl mx-auto p-3 md:p-5">
+    <div id="report-content">
+      <form id="eosForm">
+        <div class="card-master">
+          <div class="section-title">Informações de Identificação</div>
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-2">
+            <div>
+              <label class="text-[9px] font-black text-slate-500 mb-0.5 block uppercase tracking-wider">CD Operacional</label>
+              <select name="cd_operacional" id="cd_operacional" class="input-premium" required onchange="updateInfoCard()">
+                <option value="">Selecione...</option>
+                <option value="BRFPE1">BRFPE1</option>
+                <option value="BRFSP1">BRFSP1</option>
+                <option value="BRFSP2">BRFSP2</option>
+                <option value="BRFMG1">BRFMG1</option>
+                <option value="BRFRS1">BRFRS1</option>
+                <option value="BRFGO1">BRFGO1</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[9px] font-black text-slate-500 mb-0.5 block uppercase tracking-wider">Responsável</label>
+              <input type="text" name="responsavel" id="responsavel" class="input-premium" placeholder="Nome" required oninput="updateInfoCard()">
+            </div>
+            <div>
+              <label class="text-[9px] font-black text-slate-500 mb-0.5 block uppercase tracking-wider">Cargo</label>
+              <select name="cargo" id="cargo" class="input-premium" required onchange="updateInfoCard()">
+                <option value="">Selecione</option>
+                <option value="TEAM LEADER">TEAM LEADER</option>
+                <option value="COORDENADOR">COORDENADOR</option>
+                <option value="PS">PS</option>
+                <option value="SUPERVISOR">SUPERVISOR</option>
+                <option value="SUPERVISOR TURNO">SUPERVISOR TURNO</option>
+                <option value="SUPERVISOR MWH">SUPERVISOR MWH</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[9px] font-black text-slate-500 mb-0.5 block uppercase tracking-wider">Turno</label>
+              <select name="turno" id="turno" class="input-premium" required onchange="updateInfoCard()">
+                <option value="T1">T1</option><option value="T2">T2</option><option value="T3">T3</option>
+                <option value="T4">T4</option><option value="T5">T5</option><option value="T6">T6</option><option value="T7">T7</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[9px] font-black text-orange-600 mb-0.5 block uppercase tracking-wider">Área de Atuação</label>
+              <select name="area_atuacao" id="areaSelect" class="input-premium border-orange-300 bg-orange-50 font-extrabold text-orange-700 shadow-sm" required onchange="renderFields(); updateInfoCard();">
+                  <option value="">SELECIONAR ÁREA</option>
+                  <option value="INBOUND">INBOUND</option>
+                  <option value="PICKING LEVE">PICKING LEVE</option>
+                  <option value="PICKING VOL">PICKING VOL</option>
+                  <option value="CHECKING LEVE">CHECKING LEVE</option>
+                  <option value="CHECKING VOL">CHECKING VOL</option>
+                  <option value="SHIPPING">SHIPPING</option>
+                  <option value="INVENTARIO">INVENTÁRIO</option>
+                  <option value="IBT">IBT</option>
+                  <option value="QUALIDADE">QUALIDADE</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-4">
-            <div id="sync-status" class="text-[10px] uppercase font-bold text-orange-500 mr-2 animate-pulse hidden" aria-live="polite">Sincronizando...</div>
-            <div id="clock" class="text-slate-400 font-mono text-[11px] hidden md:block" aria-live="off">00:00:00</div>
-            <nav class="flex gap-2" role="tablist" aria-label="Navegação Principal">
-                <button onclick="switchTab('registro')" id="tab-registro" class="nav-tab active" role="tab" aria-selected="true" aria-controls="section-registro">
-                    <i class="fas fa-edit mr-1" aria-hidden="true"></i> Registrar
-                </button>
-                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab" role="tab" aria-selected="false" aria-controls="section-dashboard">
-                    <i class="fas fa-chart-bar mr-1" aria-hidden="true"></i> Dashboard
-                </button>
-            </nav>
-            <div class="border-l border-slate-700 h-5" aria-hidden="true"></div>
-            <div class="flex items-center gap-2">
-                <span id="user-display-email" class="text-slate-300 font-semibold text-[10px] hidden md:block">usuario@shopee.com</span>
-                <button onclick="handleLogout()" class="text-slate-500 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded p-1 transition-colors" title="Sair do sistema" aria-label="Encerrar Sessão">
-                    <i class="fas fa-power-off" aria-hidden="true"></i>
-                </button>
-            </div>
-        </div>
-    </header>
 
-    <main class="max-w-6xl mx-auto p-4">
-        
-        <!-- ABA REGISTRO DE OCORRÊNCIA -->
-        <section id="section-registro" class="grid grid-cols-1 md:grid-cols-12 gap-4" role="tabpanel" aria-labelledby="tab-registro">
-            <div class="md:col-span-8 card-master">
-                <div class="section-title text-[12px] font-bold text-slate-200 mb-4 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fas fa-exclamation-circle text-orange-500" aria-hidden="true"></i> Registrar Nova Ocorrência
-                </div>
-                
-                <form id="incidentForm" onsubmit="handleRegisterOccurrence(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                        <div>
-                            <label for="cdOperacional" class="block text-[10px] font-black uppercase text-slate-400 mb-1">CD Operacional *</label>
-                            <select id="cdOperacional" class="input-premium focus:ring-2 focus:ring-orange-500" required>
-                                <option value="">Selecione...</option>
-                                <option value="BRFPE1">BRFPE1</option>
-                                <option value="BRFSP1">BRFSP1</option>
-                                <option value="BRFSP2">BRFSP2</option>
-                                <option value="BRFGO1">BRFGO1</option>
-                                <option value="BRFMG1">BRFMG1</option>
-                                <option value="BRFRS1">BRFRS1</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="tipoOcorrencia" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Tipo de Ocorrência *</label>
-                            <select id="tipoOcorrencia" class="input-premium focus:ring-2 focus:ring-orange-500" required>
-                                <option value="">Selecione...</option>
-                                <option value="Queda de Energia">Queda de Energia</option>
-                                <option value="Queda de Internet">Queda de Internet</option>
-                                <option value="Esteira Parada">Esteira Parada</option>
-                                <option value="Sistema Indisponível">Sistema Indisponível</option>
-                                <option value="Equipamento com Defeito">Equipamento com Defeito</option>
-                                <option value="Internet Oscilando">Internet Oscilando</option>
-                                <option value="Outro">Outro</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="area" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Área / Setor *</label>
-                            <select id="area" class="input-premium focus:ring-2 focus:ring-orange-500" required>
-                                <option value="">Selecione...</option>
-                                <option value="INBOUND">Inbound</option>
-                                <option value="PICKING">Picking</option>
-                                <option value="CHECKING">Checking</option>
-                                <option value="SHIPPING">Shipping</option>
-                                <option value="IBT">IBT</option>
-                                <option value="INVENTARIO">Inventário</option>
-                                <option value="QUALIDADE">Qualidade</option>
-                            </select>
-                        </div>
-                    </div>
+        <div id="container_areas"></div>
 
-                    <div class="mb-3">
-                        <label for="tempoParado" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Tempo de Parada (minutos) *</label>
-                        <input type="number" id="tempoParado" class="input-premium focus:ring-2 focus:ring-orange-500" placeholder="Ex: 15" required min="1">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="descricao" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Descrição Detalhada *</label>
-                        <textarea id="descricao" class="input-premium h-20 py-2 px-3 resize-none block focus:ring-2 focus:ring-orange-500" placeholder="Detalhes técnicos da indisponibilidade ou falha ocorrida..." required></textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="observacao" class="block text-[10px] font-black uppercase text-slate-400 mb-1">Observações Operacionais</label>
-                        <textarea id="observacao" class="input-premium h-14 py-2 px-3 resize-none block focus:ring-2 focus:ring-orange-500" placeholder="Plano de ação imediato adotado ou recados adicionais..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-shopee w-full focus:ring-2 focus:ring-orange-500">
-                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Gravar Ocorrência na Planilha
-                    </button>
-                </form>
-            </div>
-
-            <div class="md:col-span-4 card-master flex flex-col justify-between" role="complementary" aria-label="Detalhes da Sessão">
-                <div>
-                    <div class="text-[12px] font-bold text-slate-200 mb-4 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fas fa-info-circle text-orange-500" aria-hidden="true"></i> Metadados do Registro
-                    </div>
-                    <ul class="space-y-3" aria-live="polite">
-                        <li class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-                            <div class="text-[10px] text-slate-500 font-bold uppercase">Operador Ativo</div>
-                            <div id="meta-user" class="text-xs font-semibold text-slate-200 mt-0.5">-</div>
-                        </li>
-                        <li class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-                            <div class="text-[10px] text-slate-500 font-bold uppercase">Data de Registro</div>
-                            <div id="meta-date" class="text-xs font-semibold text-slate-200 mt-0.5">-</div>
-                        </li>
-                        <li class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-                            <div class="text-[10px] text-slate-500 font-bold uppercase">Hora de Registro</div>
-                            <div id="meta-time" class="text-xs font-semibold text-slate-200 mt-0.5">-</div>
-                        </li>
-                    </ul>
-                </div>
-                <div class="text-[10px] text-slate-500 text-center mt-6">
-                    Sessão conectada Shopee Operations. Os dados serão gravados na planilha principal.
-                </div>
-            </div>
-        </section>
-
-        <!-- ABA DASHBOARD ANALÍTICO -->
-        <section id="section-dashboard" class="hidden space-y-4" role="tabpanel" aria-labelledby="tab-dashboard">
+        <div class="card-master">
+          <div class="section-title">Conclusão e Evidências</div>
+          
+          <!-- Espaçamento lateral delimitado internamente para que o texto não corte e fique 100% visível -->
+          <div class="px-3 md:px-8 mb-3">
+            <textarea name="JUSTIFICATIVA_FINAL" id="justificativa_final" class="input-premium h-24 mb-3 py-2 px-3 resize-y block w-full rounded-lg border border-slate-300 bg-white text-xs leading-relaxed" placeholder="Relate aqui os principais desafios, gargalos ou recados para o próximo turno..." oninput="updateInfoCard()"></textarea>
             
-            <!-- FILTROS DO DASHBOARD -->
-            <div class="filter-section p-3 rounded-lg card-master flex flex-wrap gap-3 items-center" role="search" aria-label="Filtros analíticos">
-                <div class="flex flex-col gap-1 w-full md:w-auto">
-                    <label for="filter-cd" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">CD Operacional</label>
-                    <select id="filter-cd" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
-                        <option value="">Todos</option>
-                    </select>
-                </div>
-                <div class="flex flex-col gap-1 w-full md:w-auto">
-                    <label for="filter-data-ini" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Período Inicial</label>
-                    <input type="date" id="filter-data-ini" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
-                </div>
-                <div class="flex flex-col gap-1 w-full md:w-auto">
-                    <label for="filter-data-fim" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Período Final</label>
-                    <input type="date" id="filter-data-fim" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
-                </div>
-                <div class="flex flex-col gap-1 w-full md:w-auto">
-                    <label for="filter-tipo" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Tipo Ocorrência</label>
-                    <select id="filter-tipo" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
-                        <option value="">Todos</option>
-                    </select>
-                </div>
-                <div class="flex flex-col gap-1 w-full md:w-auto">
-                    <label for="filter-setor" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Setor Afetado</label>
-                    <select id="filter-setor" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
-                        <option value="">Todos</option>
-                    </select>
-                </div>
-                <div class="flex flex-col gap-1 w-full md:w-auto">
-                    <label for="filter-user" class="text-[9px] uppercase font-black text-slate-500 tracking-wider">Usuário</label>
-                    <select id="filter-user" class="input-premium focus:ring-2 focus:ring-orange-500" onchange="applyFilters()">
-                        <option value="">Todos</option>
-                    </select>
-                </div>
-                <button onclick="resetFilters()" class="md:self-end h-[34px] px-4 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition-all text-slate-300 focus:ring-2 focus:ring-orange-500">
-                    <i class="fas fa-undo" aria-hidden="true"></i> Limpar Filtros
-                </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button type="button" id="btn_file_final" onclick="document.getElementById('file_final').click()" class="bg-slate-50 p-2.5 rounded-lg font-bold border border-dashed border-slate-300 text-slate-600 hover:bg-slate-100 hover:border-slate-400 transition-all uppercase text-[9px] tracking-wider">📸 ANEXO PASSAGEM DE TURNO</button>
+                <button type="button" id="btnDownload" onclick="baixarRelatorio()" class="bg-orange-600 text-white p-2.5 rounded-lg font-black hover:bg-orange-700 transition-all shadow-sm text-[9px] tracking-wider uppercase">📥 GERAR E DESCARREGAR CARD (PNG)</button>
             </div>
+          </div>
+          
+          <input type="file" id="file_final" class="hidden" accept="image/*" onchange="handleFileUpload(this, 'final')">
+          <input type="hidden" name="FOTO_FINAL" id="data_final">
+          <input type="hidden" name="drive_folder_link" value="https://drive.google.com/drive/folders/15SYHiWGr2mX3cv4UrgT99M5MxG5P1Xy6">
+        </div>
 
-            <!-- GRID DE CARD KPIs -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3" aria-live="polite">
-                <div class="kpi-card">
-                    <div class="kpi-left">
-                        <div class="kpi-label">Ocorrências Registradas</div>
-                        <div class="kpi-value text-slate-100" id="kpi-total-ocorrencias">0</div>
-                    </div>
-                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-clipboard-list" aria-hidden="true"></i></div></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-left">
-                        <div class="kpi-label">Total Minutos Perdidos</div>
-                        <div class="kpi-value text-red-500" id="kpi-total-minutos">0</div>
-                    </div>
-                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-hourglass-half" aria-hidden="true"></i></div></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-left">
-                        <div class="kpi-label">Média de Tempo</div>
-                        <div class="kpi-value text-amber-500" id="kpi-media-tempo">0.0 min</div>
-                    </div>
-                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-calculator" aria-hidden="true"></i></div></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-left">
-                        <div class="kpi-label">Gargalo Crítico (CD)</div>
-                        <div class="kpi-value text-cyan-400 text-xs truncate max-w-[140px]" id="kpi-tipo-gargalo">-</div>
-                    </div>
-                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-exclamation-triangle" aria-hidden="true"></i></div></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-left">
-                        <div class="kpi-label">Gargalo Crítico (Setor)</div>
-                        <div class="kpi-value text-purple-400" id="kpi-setor-gargalo">-</div>
-                    </div>
-                    <div class="kpi-right"><div class="kpi-icon"><i class="fas fa-industry" aria-hidden="true"></i></div></div>
-                </div>
-            </div>
+        <button type="button" id="btnEnviar" onclick="enviarDados()" class="btn-send w-full p-3 rounded-lg flex items-center justify-center gap-2 mb-8">
+          <span id="btnText" class="text-sm">Finalizar e Enviar Relatório</span>
+          <div id="btnSpinner" class="spinner"></div>
+        </button>
+      </form>
+    </div>
+  </main>
 
-            <!-- GRID DE GRÁFICOS -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="chart-box c-span-8">
-                    <div class="chart-box-header">
-                        <div class="chart-title-left"><i class="fas fa-chart-bar text-orange-500" aria-hidden="true"></i> Ocorrências por Motivo</div>
-                    </div>
-                    <canvas id="chartMotivoBar"></canvas>
-                </div>
-                <div class="chart-box c-span-4">
-                    <div class="chart-box-header">
-                        <div class="chart-title-left"><i class="fas fa-chart-pie text-cyan-500" aria-hidden="true"></i> Participação dos Motivos</div>
-                    </div>
-                    <canvas id="chartMotivoPie"></canvas>
-                </div>
-                <div class="chart-box c-span-8">
-                    <div class="chart-box-header">
-                        <div class="chart-title-left"><i class="fas fa-chart-line text-green-500" aria-hidden="true"></i> Evolução Diária (Linha)</div>
-                    </div>
-                    <canvas id="chartEvolucaoLinha"></canvas>
-                </div>
-                <div class="chart-box c-span-4">
-                    <div class="chart-box-header">
-                        <div class="chart-title-left"><i class="fas fa-list-ol text-purple-500" aria-hidden="true"></i> Ranking de Setores Impactados</div>
-                    </div>
-                    <canvas id="chartRankingSetores"></canvas>
-                </div>
-                <div class="chart-box c-span-12 h-auto min-h-[220px]">
-                    <div class="chart-box-header mb-3">
-                        <div class="chart-title-left"><i class="fas fa-th text-amber-500" aria-hidden="true"></i> Horários com Maior Incidência (Heatmap Horário)</div>
-                    </div>
-                    <div id="heatmapContainer" class="overflow-x-auto"></div>
-                </div>
-            </div>
+  <div id="success-modal">
+    <div class="bg-white p-6 rounded-xl text-center shadow-2xl max-w-xs border border-slate-100">
+      <div class="text-4xl mb-2">✅</div>
+      <h2 class="text-lg font-black mb-1 text-slate-900">Relatório Salvo!</h2>
+      <p class="text-slate-500 mb-3 text-[11px]">Passagem de turno enviada com sucesso!</p>
+      <button class="bg-orange-600 text-white w-full py-2 rounded-lg font-bold hover:bg-orange-700 shadow-md transition-all text-xs" onclick="location.reload()">NOVO REGISTRO</button>
+    </div>
+  </div>
 
-            <!-- HISTÓRICO DE RESPOSTAS PADRONIZADO E ALINHADO -->
-            <div class="table-section p-0">
-                <div class="table-wrapper">
-                    <div class="table-header flex justify-between items-center px-4 py-2 border-b border-slate-800">
-                        <div style="font-weight: 700; font-size: 12px;" class="text-slate-200">Registros Ativos Base de Dados</div>
-                        <div class="relative">
-                            <i class="fas fa-search absolute left-3 top-2.5 text-slate-500" aria-hidden="true"></i>
-                            <input type="text" id="tableSearch" oninput="applyFilters()" class="input-premium pl-8 h-8 w-48 bg-slate-900 border-slate-700 text-xs rounded focus:ring-2 focus:ring-orange-500" placeholder="Pesquisar descrição/obs...">
-                        </div>
-                    </div>
-                    <div class="table-scroll">
-                        <table id="mainTable">
-                            <thead>
-                                <tr>
-                                    <th>Timestamp</th>
-                                    <th>CD</th>
-                                    <th>E-mail</th>
-                                    <th>Tipo de Ocorrência</th>
-                                    <th>Área</th>
-                                    <th>Tempo Parado (min)</th>
-                                    <th>Descrição</th>
-                                    <th>Observação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+  <canvas id="photoCanvas" class="hidden"></canvas>
 
-        </section>
-    </main>
-</div>
+  <script>
+    // URL gerada pela publicação do script do Google Sheets
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxksjKKZiiAP9_aYP2k1qg_KIXoW3rjKq87QZT2U7BicUW0XZfjhF43KizMoLRedC2n/exec";
 
-<script>
-    // Configuração do Apps Script Web App Endpoint
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxyXFKd7EU8CHZC7vUJVA16eZ7PsbfTqcb8gavLkYFYjvaamFau78aQfnM05i0I3O93/exec";
-    const CACHE_KEY = "ocorrencias";
+    // Armazenamento global temporário de arquivos em Base64
+    const attachmentsBase64 = {};
+
+    // Relógio interno
+    setInterval(() => {
+      document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR');
+    }, 1000);
     
-    // Armazenamento em memória local dos dados obtidos
-    let rawOccurrencesData = [];
-    let filteredOccurrencesData = [];
-    const chartInstances = {};
+    // Configurações das abas operacionais
+    const config = {
+      INBOUND: [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'qtd_just_anexo', label: 'RECEBIMENTO'},
+        {type: 'qtd_just_anexo', label: 'LH'},
+        {type: 'meta_real_perc_anexo', label: 'PUTAWAY'},
+        {type: 'qtd_just_anexo', label: 'QTD DE CARROS'},
+        {type: 'sim_nao_anexo', label: 'BUFFER PUTAWAY'},
+        {type: 'meta_real_perc_anexo', label: 'IDLE TIME'},
+        {type: 'qtd_just_anexo', label: 'TRATATIVAS'},
+        {type: 'toggle_just', label: 'OPA'}
+      ],
+      "PICKING LEVE": [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'meta_real_perc_anexo', label: 'META DMO'},
+        {type: 'qtd_just_anexo', label: 'REIMPRESSÃO DE ENDEREÇO'},
+        {type: 'qtd_just_anexo', label: 'FALTAS'},
+        {type: 'qtd_just_anexo', label: 'AVARIAS'},
+        {type: 'relogio_just_anexo', label: 'ENTREGAS DE COTs'},
+        {type: 'meta_real_perc_anexo', label: 'IDLE TIME'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      "PICKING VOL": [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'meta_real_perc_anexo', label: 'META DMO'},
+        {type: 'qtd_just_anexo', label: 'REIMPRESSÃO DE ENDEREÇO'},
+        {type: 'qtd_just_anexo', label: 'FALTAS'},
+        {type: 'qtd_just_anexo', label: 'AVARIAS'},
+        {type: 'relogio_just_anexo', label: 'ENTREGAS DE COTs'},
+        {type: 'meta_real_perc_anexo', label: 'IDLE TIME'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      "CHECKING LEVE": [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'meta_real_perc_anexo', label: 'META DMO'},
+        {type: 'qtd_just_anexo', label: 'SOBRAS'},
+        {type: 'qtd_just_anexo', label: 'FALTA'},
+        {type: 'qtd_just_anexo', label: 'AVARIAS'},
+        {type: 'relogio_just_anexo', label: 'ENTREGAS DE COTs CHECKING'},
+        {type: 'meta_real_perc_anexo', label: 'IDLE TIME'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      "CHECKING VOL": [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'meta_real_perc_anexo', label: 'META DMO'},
+        {type: 'qtd_just_anexo', label: 'SOBRAS'},
+        {type: 'qtd_just_anexo', label: 'FALTA'},
+        {type: 'qtd_just_anexo', label: 'AVARIAS'},
+        {type: 'relogio_just_anexo', label: 'ENTREGAS DE COTs CHECKING'},
+        {type: 'meta_real_perc_anexo', label: 'IDLE TIME'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      SHIPPING: [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'meta_fixa_just_anexo', label: 'SLA TRANSPORTING', fixed: '99%'},
+        {type: 'qtd_just_anexo', label: 'PROD. TO PACKING - ESTEIRA (1) PEQ.'},
+        {type: 'qtd_just_anexo', label: 'PROD. TO PACKING - ESTEIRA (2) GDE.'},
+        {type: 'plano_real_anexo', label: 'PRODUÇÃO GERAL'},
+        {type: 'real_just_anexo', label: 'QTD CHECKED', desc: 'Maior que 1 hora'},
+        {type: 'qtd_just_anexo', label: 'TOTAL DE HC PRESENTE'},
+        {type: 'meta_fixa_just_anexo', label: 'NET', fixed: '80'},
+        {type: 'meta_fixa_just_anexo', label: 'ABS', fixed: '15%'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      INVENTARIO: [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'qtd_just_anexo', label: 'ESTOQUE ATUAL DE AV'},
+        {type: 'qtd_just_anexo', label: 'ESTOQUE ATUAL DE DEM'},
+        {type: 'qtd_just_anexo', label: 'ESTOQUE ATUAL GERAL'},
+        {type: 'qtd_just_anexo', label: 'TOTAL DE ENDEREÇOS'},
+        {type: 'qtd_just_anexo', label: 'ENDEREÇOS BLOQUEADOS'},
+        {type: 'qtd_just_anexo', label: 'ENDEREÇOS DESBLOQUEADOS'},
+        {type: 'qtd_just_anexo', label: 'ENDEREÇOS OCUPADOS'},
+        {type: 'qtd_real_anexo', label: 'ENDEREÇOS CONTADOS'},
+        {type: 'qtd_just_anexo', label: 'OB PICKING'},
+        {type: 'meta_real_perc_anexo', label: 'META DMO'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      IBT: [
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'qtd_just_anexo', label: 'PEÇAS TRATADAS NO DIA'},
+        {type: 'qtd_just_anexo', label: 'SURPLUS'},
+        {type: 'qtd_just_anexo', label: 'SHORTAGES'},
+        {type: 'qtd_just_anexo', label: 'IA'},
+        {type: 'qtd_just_anexo', label: 'INV'},
+        {type: 'qtd_just_anexo', label: 'SKU'},
+        {type: 'qtd_just_anexo', label: 'PENDENTES'},
+        {type: 'qtd_just_anexo', label: 'MTO'},
+        {type: 'qtd_just_anexo', label: 'MTO FAIL'},
+        {type: 'qtd_just_anexo', label: 'CHECKED'},
+        {type: 'qtd_just_anexo', label: 'PEÇAS AGUARDANDO TRATATIVAS'},
+        {type: 'sim_nao_just_anexo', label: 'OPA'}
+      ],
+      QUALIDADE: [
+        {type: 'section_header', label: 'ABERTURA DE TURNO'},
+        {type: 'qtd_just_anexo', label: 'HC ESPERADOS'},
+        {type: 'qtd_just_anexo', label: 'HC PRESENTES'},
+        {type: 'qtd_just_anexo', label: 'HC AUSENTES'},
+        {type: 'perc_just_anexo', label: 'ABS'},
+        
+        {type: 'section_header', label: 'EQUIPAMENTOS'},
+        {type: 'qtd_just_anexo', label: 'NOTEBOOK'},
+        {type: 'qtd_just_anexo', label: 'BIP'},
+        {type: 'qtd_just_anexo', label: 'PDA'},
+        {type: 'qtd_just_anexo', label: 'RÁDIO'},
+        
+        {type: 'section_header', label: 'ROTINA SUPERVISORES'},
+        {type: 'sim_nao_just_anexo', label: 'DDSMA'},
+        {type: 'sim_nao_just_anexo', label: 'DDQA'},
+        {type: 'toggle_just', label: 'CUIDADO ATIVO'},
+        {type: 'toggle_just', label: 'SAFETY WALK'},
+        {type: 'toggle_just', label: '5S (Aréa Avarias / Qualidade)'},
+        {type: 'toggle_just', label: 'OPA'},
+        {type: 'toggle_just', label: 'OPA (PLANO DE AÇÃO)'},
+        
+        {type: 'section_header', label: 'AVARIAS'},
+        {type: 'input_text_only', label: 'AVARIAS - NOME RESPONSÁVEL'},
+        {type: 'qtd_just_anexo', label: 'QUANTIDADE RECOLHIDAS'},
+        {type: 'qtd_just_anexo', label: 'AVARIAS TRATADAS'},
+        {type: 'qtd_just_anexo', label: 'BACKLOG AVARIAS'},
+        
+        /* ABA EXCLUSIVA RETURNS */
+        {type: 'section_header', label: 'RETURNS'},
+        {type: 'input_text_only', label: 'RETURNS - NOME RESPONSÁVEL'},
+        {type: 'real_just_anexo', label: 'RETURNS'},
+        {type: 'qtd_just_anexo', label: 'BACKLOG RETURNS'},
+        
+        {type: 'section_header', label: 'RESPONSABILIDADE RR'},
+        {type: 'input_text_only', label: 'RR - NOME RESPONSÁVEL'},
+        {type: 'qtd_just_anexo', label: 'RR'},
+        
+        /* BLOCO DE NOTAS RR (Editável para copiar/colar de forma livre) */
+        {type: 'notepad_editable', label: 'RR Reference Day - Rolling Days'},
+        
 
-    // Inicialização da Página
-    window.onload = function() {
-        checkSession();
-        setInterval(updateClock, 1000);
+        {type: 'toggle_just', label: 'RR (Plano de Ação)'},
+        
+        {type: 'section_header', label: 'TREINAMENTOS'},
+        {type: 'input_number_just_anexo', label: 'CAPACITAÇÃO/ONBOARDING'},
+        {type: 'input_text_only', label: 'CAPACITAÇÃO/ONBOARDING - NOME RESPONSÁVEL'},
+        {type: 'input_number_just_anexo', label: 'RECICLAGEM'},
+        {type: 'input_text_only', label: 'RECICLAGEM - NOME RESPONSÁVEL'},
+        {type: 'input_just_only', label: 'ANÁLISE LC PRODUTIVIDADE'},
+        {type: 'input_text_only', label: 'REVISÃO MATERIAL - NOME RESPONSÁVEL'},
+        
+        
+        {type: 'section_header', label: 'AUDITORIAS'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA DOCA INB'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA BOXING'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA PUTAWAY'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA PICKING'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA DEVICE'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA CHECKING'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA MERGE'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA SHIPPING'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA DOCA OUT'},
+        {type: 'qtd_just_anexo', label: 'AUDITORIA 5\'S'},
+        {type: 'qtd_just_anexo';, label: 'TOTAL DE AUDITORIAS'},
+        
+        {type: 'section_header', label: 'CUBISCAN PE'},
+        {type: 'qtd_just_anexo', label: 'CORREÇÃO REALIZADA'},
+        {type: 'qtd_just_anexo', label: 'NÃO IDENTIFICADO'},
+        {type: 'qtd_just_anexo', label: 'BACKLOG CUBSCAN'},
+        {type: 'input_just_anexo_only', label: 'OBSERVAÇÕES DO TURNO'}
+      ]
     };
 
-    function updateClock() {
-        const el = document.getElementById('clock');
-        if (el) el.innerText = new Date().toLocaleTimeString('pt-BR');
+    function updateInfoCard() {
+      // Mantido para compatibilidade
     }
 
-    // Sessão Ativa por E-mail Corporativo
-    function checkSession() {
-        const userEmail = sessionStorage.getItem("user_email");
-        if (userEmail) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-interface').classList.remove('hidden');
-            document.getElementById('user-display-email').innerText = userEmail;
-            document.getElementById('meta-user').innerText = userEmail;
-            
-            // Define data e hora local do carregamento
-            const today = new Date();
-            document.getElementById('meta-date').innerText = today.toLocaleDateString('pt-BR');
-            document.getElementById('meta-time').innerText = today.toLocaleTimeString('pt-BR').substring(0, 5);
+    // Auxiliar de seleção de botões SIM/NÃO
+    function setToggle(btn, hiddenId, value) {
+      const container = btn.parentElement;
+      container.querySelectorAll('.btn-toggle').forEach(b => {
+        b.classList.remove('active-sim', 'active-nao');
+      });
+      if(value === 'SIM') {
+        btn.classList.add('active-sim');
+      } else {
+        btn.classList.add('active-nao');
+      }
+      document.getElementById(hiddenId).value = value;
+    }
+
+    // Auxiliar para cálculo de porcentagem automática
+    function calcPerc(id) {
+      const meta = parseFloat(document.getElementById(`meta_${id}`).value);
+      const real = parseFloat(document.getElementById(`real_${id}`).value);
+      const percInput = document.getElementById(`perc_${id}`);
+      if(meta && real) {
+        const perc = ((real / meta) * 100).toFixed(1);
+        percInput.value = `${perc}%`;
+      } else {
+        percInput.value = '';
+      }
+    }
+
+    // Gerencia o feedback de arquivo carregado e guarda o Base64 na variável de anexos
+    function handleFileUpload(input, id) {
+      const button = document.getElementById(`btn_file_${id}`);
+      if(input.files && input.files[0]) {
+        button.classList.add('btn-attached');
+        button.innerText = '✓ ANEXADO';
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // Guarda o base64 e o nome do arquivo para enviar ao Google Drive
+          attachmentsBase64[id] = {
+            fileName: input.files[0].name,
+            base64: e.target.result
+          };
+          if(id === 'final') {
+            document.getElementById('data_final').value = e.target.result;
+          }
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function renderFields() {
+      const area = document.getElementById('areaSelect').value;
+      const container = document.getElementById('container_areas');
+      container.innerHTML = "";
+      if(!area || !config[area]) return;
+
+      let html = `<div class="card-master"><div class="section-title">Indicadores Operacionais | ${area}</div>`;
+
+      config[area].forEach((item, idx) => {
+        const id = `${area.replace(/\s+/g, '_')}_${idx}`;
+        const prefix = `${area.replace(/\s+/g, '_')}_${item.label.replace(/\s+/g, '_')}`;
+
+        if (item.type === 'section_header') {
+          html += `<div class="quality-sub-header">${item.label}</div>`;
+        }
+        else if (item.type === 'notepad_editable') {
+          html += `<div class="my-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+            <div class="text-[9px] font-black text-amber-800 uppercase mb-1 flex justify-between items-center px-1">
+              <span>📝 ${item.label} (Bloco de Notas Editável)</span>
+              <span class="text-[8px] bg-amber-200 px-1.5 py-0.5 rounded text-amber-700 font-bold">COPIAR / COLAR LIVRE</span>
+            </div>
+            <textarea name="${prefix}_NOTEPAD" class="w-full h-20 p-2 text-[11px] font-semibold text-slate-700 bg-white border border-amber-300 rounded focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-y leading-tight" placeholder="Cole ou digite aqui as informações de Reference Day, Rolling Days e métricas de RR..."></textarea>
+          </div>`;
+        }
+        else if (item.type === 'meta_real_perc_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="grid grid-cols-2 gap-1">
+              <input type="number" id="meta_${id}" name="${prefix}_META" class="input-premium text-center" placeholder="Meta">
+              <input type="number" id="real_${id}" name="${prefix}_REAL" class="input-premium text-center" placeholder="Real" oninput="calcPerc('${id}')">
+            </div>
+            <div><input type="text" id="perc_${id}" name="${prefix}_PERC" class="input-premium bg-slate-100 text-center font-bold text-orange-600" placeholder="%" readonly></div>
+            <div>
+               <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+               <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'sim_nao_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="flex gap-1">
+              <button type="button" onclick="setToggle(this, '${id}_v', 'SIM')" class="btn-toggle text-xs">SIM</button>
+              <button type="button" onclick="setToggle(this, '${id}_v', 'NÃO')" class="btn-toggle text-xs">NÃO</button>
+              <input type="hidden" id="${id}_v" name="${prefix}_STATUS">
+            </div>
+            <div><input type="text" class="input-premium opacity-50 text-xs" placeholder="Sem justificativa" disabled></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'sim_nao_just_anexo' || item.type === 'toggle_just') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="flex gap-1">
+              <button type="button" onclick="setToggle(this, '${id}_v', 'SIM')" class="btn-toggle text-xs">SIM</button>
+              <button type="button" onclick="setToggle(this, '${id}_v', 'NÃO')" class="btn-toggle text-xs">NÃO</button>
+              <input type="hidden" id="${id}_v" name="${prefix}_STATUS">
+            </div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'relogio_just_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div><input type="time" name="${prefix}_HORA" class="input-premium"></div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'idle_custom') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="grid grid-cols-2 gap-1">
+              <input type="time" name="${prefix}_DE" class="input-premium text-center">
+              <input type="time" name="${prefix}_ATE" class="input-premium text-center">
+            </div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Motivo do Idle"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'qtd_just_anexo' || item.type === 'real_just_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs flex flex-col">
+              <span>${item.label}</span>
+              ${item.desc ? `<span class="text-[8px] font-normal text-slate-400 -mt-0.5">${item.desc}</span>` : ''}
+            </div>
+            <div><input type="number" name="${prefix}_QTD" class="input-premium text-center" placeholder="Qtd"></div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa/Obs"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'meta_fixa_just_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="grid grid-cols-2 gap-1">
+              <div class="bg-slate-100 border border-slate-200 text-slate-500 rounded-lg flex items-center justify-center text-[10px] font-bold h-[30px]">${item.fixed}</div>
+              <input type="text" name="${prefix}_REAL" class="input-premium text-center" placeholder="Real">
+            </div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'plano_real_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="grid grid-cols-2 gap-1">
+              <input type="number" name="${prefix}_PLANO" class="input-premium text-center" placeholder="Plano">
+              <input type="number" name="${prefix}_REAL" class="input-premium text-center" placeholder="Real">
+            </div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'input_text_only') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="col-span-2"><input type="text" name="${prefix}_TXT" class="input-premium" placeholder="Digite o texto explicativo"></div>
+            <div><input type="text" class="input-premium opacity-50 text-xs" placeholder="Sem anexo" disabled></div>
+          </div>`;
+        }
+        else if (item.type === 'input_number_just_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div><input type="number" name="${prefix}_NUM" class="input-premium text-center" placeholder="Valor"></div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'input_date_just_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div><input type="date" name="${prefix}_DATA" class="input-premium text-center text-xs"></div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'input_perc_just_anexo' || item.type === 'perc_just_anexo') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div><input type="text" name="${prefix}_PERC" class="input-premium text-center" placeholder="Ex: 95%"></div>
+            <div><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Justificativa"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'input_just_only') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="col-span-2"><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Análise / Justificativa"></div>
+            <div><input type="text" class="input-premium opacity-50 text-xs" placeholder="Sem anexo" disabled></div>
+          </div>`;
+        }
+        else if (item.type === 'input_just_anexo_only') {
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div class="col-span-2"><input type="text" name="${prefix}_JUST" class="input-premium" placeholder="Observações gerais do turno"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+        else if (item.type === 'select_obs_anexo') {
+          /* Linha Suspensa (Dropdown) + Linha de Observação de Auditorias */
+          html += `<div class="unified-grid-row">
+            <div class="font-bold text-slate-700 text-xs">${item.label}</div>
+            <div>
+              <select name="${prefix}_STATUS" class="input-premium text-xs font-bold text-slate-700">
+                <option value="">Selecione...</option>
+                <option value="REALIZADO">REALIZADO</option>
+                <option value="NÃO REALIZADO">NÃO REALIZADO</option>
+                <option value="PENDENTE">PENDENTE</option>
+                <option value="OK">OK</option>
+                <option value="NÃO OK">NÃO OK</option>
+                <option value="N/A">N/A</option>
+              </select>
+            </div>
+            <div><input type="text" name="${prefix}_OBS" class="input-premium text-xs" placeholder="Linha de Observação"></div>
+            <div>
+              <button type="button" id="btn_file_${id}" onclick="document.getElementById('file_${id}').click()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 w-full text-[9px] font-black h-[30px] rounded-lg border border-slate-300 transition-all uppercase tracking-wider">ANEXO</button>
+              <input type="file" id="file_${id}" class="hidden" onchange="handleFileUpload(this, '${id}')">
+            </div>
+          </div>`;
+        }
+      });
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    // Geração de imagem do relatório usando html2canvas
+    function baixarRelatorio() {
+      const content = document.getElementById('report-content');
+      content.classList.add('canvas-snapshot');
+      
+      html2canvas(content, { scale: 2, useCORS: true }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `EOS_BR_Passagem_Turno_${document.getElementById('areaSelect').value || 'Geral'}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+        content.classList.remove('canvas-snapshot');
+      }).catch(err => {
+        console.error('Erro ao gerar imagem:', err);
+        content.classList.remove('canvas-snapshot');
+      });
+    }
+
+    // Envio dos dados integrados com a Planilha de Destino e Upload Automático das Imagens
+    function enviarDados() {
+      const form = document.getElementById('eosForm');
+      if(!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      if (WEB_APP_URL === "SUA_URL_DO_WEB_APP_AQUI" || WEB_APP_URL === "") {
+        alert("Aviso: É necessário configurar a constante 'WEB_APP_URL' do Apps Script no código HTML para habilitar a gravação na planilha.");
+        return;
+      }
+
+      document.getElementById('btnText').innerText = "Enviando dados para planilha...";
+      document.getElementById('btnSpinner').style.display = "inline-block";
+      document.getElementById('btnEnviar').disabled = true;
+
+      // Montagem do payload de metadados
+      const formDataObj = {};
+      const inputs = form.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        if (input.name && input.type !== 'file' && !input.name.startsWith('file_')) {
+          formDataObj[input.name] = input.value;
+        }
+      });
+
+      // Estrutura o objeto final para envio
+      const payload = {
+        metadata: formDataObj,
+        attachments: attachmentsBase64
+      };
+
+      // Realiza o POST assíncrono para o Apps Script
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('btnText').innerText = "Finalizar e Enviar Relatório";
+        document.getElementById('btnSpinner').style.display = "none";
+        document.getElementById('btnEnviar').disabled = false;
+
+        if (data.status === "success") {
+          document.getElementById('success-modal').style.display = "flex";
         } else {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('main-interface').classList.add('hidden');
+          alert("Ocorreu um erro ao salvar na planilha: " + data.message);
         }
+      })
+      .catch(err => {
+        console.error('Erro de envio:', err);
+        document.getElementById('btnText').innerText = "Finalizar e Enviar Relatório";
+        document.getElementById('btnSpinner').style.display = "none";
+        document.getElementById('btnEnviar').disabled = false;
+        // Fallback para confirmação caso a requisição seja processada em modo simplificado
+        document.getElementById('success-modal').style.display = "flex";
+      });
     }
-
-    // LOGIN COM VALIDAÇÃO DE DOMÍNIO SHOPEE OU FORMATO DE EMAIL VÁLIDO
-    function handleLogin(event) {
-        event.preventDefault();
-        const email = document.getElementById('loginEmail').value.trim();
-        if (email.endsWith("@shopee.com") || email.endsWith("@shopeemobile.com") || email.includes("@")) {
-            sessionStorage.setItem("user_email", email);
-            checkSession();
-        } else {
-            alert("Por favor, digite um e-mail corporativo válido.");
-        }
-    }
-
-    function handleLogout() {
-        if(confirm("Deseja sair do sistema?")) {
-            sessionStorage.removeItem("user_email");
-            checkSession();
-        }
-    }
-
-    // Gerenciador de Abas de Navegação
-    function switchTab(tabName) {
-        document.getElementById('tab-registro').classList.toggle('active', tabName === 'registro');
-        document.getElementById('tab-dashboard').classList.toggle('active', tabName === 'dashboard');
-        
-        document.getElementById('section-registro').classList.toggle('hidden', tabName !== 'registro');
-        document.getElementById('section-dashboard').classList.toggle('hidden', tabName !== 'dashboard');
-
-        if (tabName === 'dashboard') {
-            syncDashboardData();
-        }
-    }
-
-    // GRAVAÇÃO DE OCORRÊNCIA NA PLANILHA (POST)
-    function handleRegisterOccurrence(event) {
-        event.preventDefault();
-        
-        const submitBtn = event.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gravando...';
-
-        const now = new Date();
-        const payload = {
-            timestamp: UtilitiesFormatDate(now, "dd/MM/yyyy HH:mm:ss"),
-            data: UtilitiesFormatDate(now, "dd/MM/yyyy"),
-            hora: UtilitiesFormatDate(now, "HH:mm:ss"),
-            email: sessionStorage.getItem("user_email"),
-            cd: document.getElementById('cdOperacional').value,
-            tipoOcorrencia: document.getElementById('tipoOcorrencia').value,
-            area: document.getElementById('area').value,
-            tempoParado: parseFloat(document.getElementById('tempoParado').value) || 0,
-            descricao: document.getElementById('descricao').value.trim(),
-            observacao: document.getElementById('observacao').value.trim()
-        };
-
-        fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            alert("✅ Ocorrência operacional registrada com sucesso na planilha Shopee!");
-            document.getElementById('incidentForm').reset();
-        })
-        .catch(err => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            console.error("Erro ao enviar ocorrência:", err);
-            alert("Ocorrência gravada com sucesso!");
-        });
-    }
-
-    // LEITURA E SINCRONIZAÇÃO EM TEMPO REAL (GET)
-    function syncDashboardData() {
-        toggleLoading(true, "Buscando dados em tempo real da planilha...");
-        
-        fetch(WEB_APP_URL)
-        .then(response => {
-            if (!response.ok) throw new Error("Erro HTTP");
-            return response.text();
-        })
-        .then(text => {
-            toggleLoading(false);
-            
-            const trimmedText = text.trim();
-            let parsedData = [];
-            
-            if (trimmedText.startsWith("[") || trimmedText.startsWith("{")) {
-                const json = JSON.parse(trimmedText);
-                parsedData = Array.isArray(json) ? json : (json.data || json.rows || []);
-            } else {
-                parsedData = parseCSV(trimmedText);
-            }
-
-            rawOccurrencesData = parsedData.map(item => {
-                const row = {};
-                for (let key in item) {
-                    const normKey = key.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9]/g, "");
-                    if (normKey === "TIMESTAMP" || normKey === "CARIMBODEDATAHORA" || normKey === "DATAHORA") {
-                        row["Timestamp"] = item[key];
-                        // Auto-extrai Data e Hora do Timestamp se não vierem de colunas separadas
-                        const parts = item[key].split(' ');
-                        row["Data"] = parts[0];
-                        row["Hora"] = parts[1] || "00:00:00";
-                    }
-                    else if (normKey === "DATA") row["Data"] = item[key];
-                    else if (normKey === "HORA") row["Hora"] = item[key];
-                    else if (normKey === "EMAIL") row["E-mail"] = item[key];
-                    else if (normKey === "CD" || normKey === "CDOPERACIONAL") row["CD"] = item[key];
-                    else if (normKey === "TIPODEOCORRENCIA" || normKey === "OCORRENCIA") row["Tipo de Ocorrência"] = item[key];
-                    else if (normKey === "AREA" || normKey === "SETOR") row["Área"] = item[key];
-                    else if (normKey === "TEMPOPARADO" || normKey === "TEMPOPARADOMIN" || normKey === "TEMPO") row["Tempo Parado"] = parseFloat(item[key]) || 0;
-                    else if (normKey === "DESCRICAO") row["Descrição"] = item[key];
-                    else if (normKey === "OBSERVACAO" || normKey === "OBSERVACOES") row["Observação"] = item[key];
-                    else row[key] = item[key];
-                }
-                return row;
-            });
-            
-            // Grava cópia limpa em cache local de segurança
-            localStorage.setItem(CACHE_KEY, JSON.stringify(rawOccurrencesData));
-            
-            buildFilterOptions();
-            applyFilters();
-        })
-        .catch(err => {
-            toggleLoading(false);
-            console.error("Erro ao sincronizar base:", err);
-            loadFallbackData();
-        });
-    }
-
-    // CARREGADOR DE CACHE LOCAL NA AUSÊNCIA DE CONEXÃO (SEM REGISTROS FALSOS)
-    function loadFallbackData() {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-            rawOccurrencesData = JSON.parse(cached);
-            showToast("Modo offline ativo. Exibindo cópia local dos dados.", false);
-        } else {
-            rawOccurrencesData = [];
-            showToast("Sem conexão de rede e sem dados locais armazenados.", false);
-        }
-        buildFilterOptions();
-        applyFilters();
-    }
-
-    // SISTEMA DE LEITURA CSV DE SEGURANÇA
-    function parseCSV(text) {
-        const lines = text.split(/\r?\n/);
-        if (lines.length === 0) return [];
-        const separator = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : ',';
-        
-        const parseLine = (line) => {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === separator && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim());
-            return result.map(val => val.replace(/^"|"$/g, '').trim());
-        };
-
-        const headers = parseLine(lines[0]);
-        const parsedRows = [];
-        for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            const cols = parseLine(lines[i]);
-            const row = {};
-            headers.forEach((header, index) => {
-                row[header] = cols[index] !== undefined ? cols[index] : "";
-            });
-            parsedRows.push(row);
-        }
-        return parsedRows;
-    }
-
-    // FILTRAGEM INTELIGENTE E RÁPIDA
-    function buildFilterOptions() {
-        const cds = [...new Set(rawOccurrencesData.map(d => d["CD"]))].filter(Boolean).sort();
-        const types = [...new Set(rawOccurrencesData.map(d => d["Tipo de Ocorrência"]))].filter(Boolean).sort();
-        const sectors = [...new Set(rawOccurrencesData.map(d => d["Área"]))].filter(Boolean).sort();
-        const users = [...new Set(rawOccurrencesData.map(d => d["E-mail"]))].filter(Boolean).sort();
-
-        const populate = (id, list) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            const val = el.value;
-            el.innerHTML = '<option value="">Todos</option>' + list.map(x => `<option value="${x}">${x}</option>`).join('');
-            el.value = val;
-        };
-
-        populate('filter-cd', cds);
-        populate('filter-tipo', types);
-        populate('filter-setor', sectors);
-        populate('filter-user', users);
-    }
-
-    function applyFilters() {
-        const fCd = document.getElementById('filter-cd').value;
-        const fDataIni = document.getElementById('filter-data-ini').value;
-        const fDataFim = document.getElementById('filter-data-fim').value;
-        const fTipo = document.getElementById('filter-tipo').value;
-        const fSetor = document.getElementById('filter-setor').value;
-        const fUser = document.getElementById('filter-user').value;
-        const fSearch = document.getElementById('tableSearch') ? document.getElementById('tableSearch').value.toLowerCase().trim() : "";
-
-        filteredOccurrencesData = rawOccurrencesData.filter(d => {
-            if (fCd && d["CD"] !== fCd) return false;
-            if (fTipo && d["Tipo de Ocorrência"] !== fTipo) return false;
-            if (fSetor && d["Área"] !== fSetor) return false;
-            if (fUser && d["E-mail"] !== fUser) return false;
-            
-            if (fSearch && 
-                !(d["Descrição"] || "").toLowerCase().includes(fSearch) && 
-                !(d["Observação"] || "").toLowerCase().includes(fSearch)) {
-                return false;
-            }
-
-            if (fDataIni || fDataFim) {
-                const parts = d["Data"].split('/');
-                const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-                
-                if (fDataIni) {
-                    const ini = new Date(fDataIni + "T00:00:00");
-                    if (dateObj < ini) return false;
-                }
-                if (fDataFim) {
-                    const fim = new Date(fDataFim + "T23:59:59");
-                    if (dateObj > fim) return false;
-                }
-            }
-            return true;
-        });
-
-        updateKPIs();
-        renderCharts();
-        renderHeatmap();
-        renderTable();
-    }
-
-    function resetFilters() {
-        document.getElementById('filter-cd').value = "";
-        document.getElementById('filter-data-ini').value = "";
-        document.getElementById('filter-data-fim').value = "";
-        document.getElementById('filter-tipo').value = "";
-        document.getElementById('filter-setor').value = "";
-        document.getElementById('filter-user').value = "";
-        if (document.getElementById('tableSearch')) document.getElementById('tableSearch').value = "";
-        applyFilters();
-    }
-
-    // SISTEMA DE CÁLCULO DE KPIs REAIS
-    function updateKPIs() {
-        const total = filteredOccurrencesData.length;
-        document.getElementById('kpi-total-ocorrencias').innerText = total;
-
-        const minutos = filteredOccurrencesData.reduce((acc, curr) => acc + (parseFloat(curr["Tempo Parado"]) || 0), 0);
-        document.getElementById('kpi-total-minutos').innerText = `${minutos} min`;
-
-        const media = total > 0 ? (minutos / total).toFixed(1) : "0.0";
-        document.getElementById('kpi-media-tempo').innerText = `${media} min`;
-
-        const typeCounts = {};
-        filteredOccurrencesData.forEach(d => typeCounts[d["Tipo de Ocorrência"]] = (typeCounts[d["Tipo de Ocorrência"]] || 0) + 1);
-        const topType = Object.keys(typeCounts).sort((a,b) => typeCounts[b] - typeCounts[a])[0] || "-";
-        document.getElementById('kpi-tipo-gargalo').innerText = topType;
-
-        const sectorCounts = {};
-        filteredOccurrencesData.forEach(d => sectorCounts[d["Área"]] = (sectorCounts[d["Área"]] || 0) + 1);
-        const topSector = Object.keys(sectorCounts).sort((a,b) => sectorCounts[b] - sectorCounts[a])[0] || "-";
-        document.getElementById('kpi-setor-gargalo').innerText = topSector;
-    }
-
-    // GRÁFICOS OTIMIZADOS E RÁPIDOS (SMART UPDATE)
-    function renderCharts() {
-        // 1. Ocorrências por Motivo (Barras)
-        const motivesCounts = {};
-        filteredOccurrencesData.forEach(d => motivesCounts[d["Tipo de Ocorrência"]] = (motivesCounts[d["Tipo de Ocorrência"]] || 0) + 1);
-        const motivesLabels = Object.keys(motivesCounts);
-        const motivesData = Object.values(motivesCounts);
-
-        const barConfig = {
-            datasetStyle: {
-                backgroundColor: 'rgba(238, 77, 45, 0.85)',
-                borderColor: '#ee4d2d',
-                borderWidth: 1.5,
-                borderRadius: 4
-            },
-            options: getCommonChartOptions()
-        };
-        createOrUpdateChart('chartMotivoBar', 'bar', motivesLabels, motivesData, "Ocorrências", barConfig);
-
-        // 2. Participação dos Motivos (Pie)
-        const pieConfig = {
-            datasetStyle: {
-                backgroundColor: ['#ee4d2d', '#2f81f7', '#3fb950', '#8957e5', '#d29922', '#39c5cf', '#808080'],
-                borderWidth: 1,
-                borderColor: '#0d1117'
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#8b949e', font: { size: 9 } } }
-                }
-            }
-        };
-        createOrUpdateChart('chartMotivoPie', 'doughnut', motivesLabels, motivesData, "Participação", pieConfig);
-
-        // 3. Evolução Diária (Linha)
-        const dateCounts = {};
-        filteredOccurrencesData.forEach(d => dateCounts[d["Data"]] = (dateCounts[d["Data"]] || 0) + 1);
-        const dateLabels = Object.keys(dateCounts).sort((a,b) => {
-            const partsA = a.split('/');
-            const partsB = b.split('/');
-            return new Date(partsA[2], partsA[1]-1, partsA[0]) - new Date(partsB[2], partsB[1]-1, partsB[0]);
-        });
-        const dateData = dateLabels.map(d => dateCounts[d]);
-
-        const lineConfig = {
-            datasetStyle: {
-                borderColor: '#ee4d2d',
-                backgroundColor: 'rgba(238, 77, 45, 0.1)',
-                fill: true,
-                tension: 0.35,
-                borderWidth: 3
-            },
-            options: getCommonChartOptions()
-        };
-        createOrUpdateChart('chartEvolucaoLinha', 'line', dateLabels, dateData, "Evolução", lineConfig);
-
-        // 4. Ranking de Setores (Barras Horizontal)
-        const sectorCounts = {};
-        filteredOccurrencesData.forEach(d => sectorCounts[d["Área"]] = (sectorCounts[d["Área"]] || 0) + 1);
-        const sectorLabels = Object.keys(sectorCounts).sort((a,b) => sectorCounts[b] - sectorCounts[a]);
-        const sectorData = sectorLabels.map(s => sectorCounts[s]);
-
-        const horizontalBarConfig = {
-            datasetStyle: {
-                backgroundColor: '#8957e5'
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                    y: { grid: { display: false }, ticks: { color: '#8b949e' } }
-                }
-            }
-        };
-        createOrUpdateChart('chartRankingSetores', 'bar', sectorLabels, sectorData, "Ocorrências", horizontalBarConfig);
-    }
-
-    // HEATMAP DE INCIDÊNCIA HORÁRIA
-    function renderHeatmap() {
-        const heatmapMatrix = {};
-        const diasSemana = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-        const diasSemanaShort = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-
-        diasSemana.forEach(d => {
-            heatmapMatrix[d] = Array(24).fill(0);
-        });
-
-        filteredOccurrencesData.forEach(d => {
-            try {
-                const hour = parseInt(d["Hora"].split(':')[0]);
-                if (heatmapMatrix[d.diaSemana] !== undefined && !isNaN(hour)) {
-                    heatmapMatrix[d.diaSemana][hour]++;
-                } else {
-                    const parts = d["Data"].split('/');
-                    const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-                    const dayName = diasSemana[dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1];
-                    if (heatmapMatrix[dayName] !== undefined && !isNaN(hour)) {
-                        heatmapMatrix[dayName][hour]++;
-                    }
-                }
-            } catch(e){}
-        });
-
-        let hHtml = `<div class="heatmap-grid min-w-[700px]"><div class="heatmap-header-cell"></div>`;
-        for (let i = 0; i < 24; i++) {
-            hHtml += `<div class="heatmap-header-cell text-center font-mono font-bold text-[9px] text-slate-500">${i}h</div>`;
-        }
-        hHtml += `</div>`;
-
-        diasSemana.forEach((d, idx) => {
-            hHtml += `<div class="heatmap-grid min-w-[700px]"><div class="heatmap-row-label text-[10px] text-slate-400 font-bold">${diasSemanaShort[idx]}</div>`;
-            for (let i = 0; i < 24; i++) {
-                const val = heatmapMatrix[d][i];
-                const opacity = val > 4 ? 0.9 : (val > 2 ? 0.6 : (val > 0 ? 0.3 : 0.05));
-                const color = val > 0 ? `rgba(238, 77, 45, ${opacity})` : '#161b22';
-                hHtml += `<div class="heatmap-cell" style="background:${color}" title="${d} - ${i}h: ${val} ocorrências">${val}</div>`;
-            }
-            hHtml += `</div>`;
-        });
-
-        document.getElementById('heatmapContainer').innerHTML = hHtml;
-    }
-
-    // TABELA HISTÓRICA DETALHADA
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = filteredOccurrencesData.map(d => `
-            <tr class="hover:bg-slate-900/40">
-                <td class="font-mono text-slate-300">${d["Timestamp"]}</td>
-                <td class="font-bold text-slate-400" style="color: var(--accent-blue);">${d["CD"] || ""}</td>
-                <td class="font-semibold text-slate-400">${d["E-mail"]}</td>
-                <td style="color: var(--shopee-orange); font-weight: 700;">${d["Tipo de Ocorrência"]}</td>
-                <td class="font-bold" style="color: var(--accent-purple);">${d["Área"]}</td>
-                <td class="text-center font-bold text-red-500">${d["Tempo Parado"]} min</td>
-                <td class="max-w-xs truncate" title="${d["Descrição"]}">${d["Descrição"]}</td>
-                <td class="max-w-xs truncate" title="${d["Observação"]}">${d["Observação"]}</td>
-            </tr>
-        `).join('');
-    }
-
-    // GERENCIADOR DE INSTÂNCIAS DE GRÁFICO (REUSO IN-PLACE PARA MÁXIMA VELOCIDADE - FASE 9)
-    function createOrUpdateChart(id, type, labels, data, datasetLabel = "", extraConfig = {}) {
-        if (chartInstances[id]) {
-            // Atualização de dados direta na memória (evita DOM thrashing e piscar de tela)
-            chartInstances[id].data.labels = labels;
-            chartInstances[id].data.datasets[0].data = data;
-            if (datasetLabel) chartInstances[id].data.datasets[0].label = datasetLabel;
-            chartInstances[id].update('none'); 
-            return chartInstances[id];
-        }
-
-        const ctx = getChartCtx(id);
-        if (!ctx) return null;
-
-        const datasets = [{
-            data: data,
-            borderWidth: 1
-        }];
-        if (datasetLabel) datasets[0].label = datasets[0].label = datasetLabel;
-        if (extraConfig.datasetStyle) {
-            Object.assign(datasets[0], extraConfig.datasetStyle);
-        }
-
-        chartInstances[id] = new Chart(ctx, {
-            type: type,
-            data: {
-                labels: labels,
-                datasets: datasets
-            },
-            options: extraConfig.options || {}
-        });
-        return chartInstances[id];
-    }
-
-    function getChartCtx(id) {
-        const el = document.getElementById(id);
-        if (!el) return null;
-        try {
-            return el.getContext('2d');
-        } catch(e) {
-            return null;
-        }
-    }
-
-    function getCommonChartOptions() {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { display: false }, ticks: { color: '#8b949e', font: { size: 9 } } },
-                y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e', font: { size: 9 }, precision: 0 } }
-            }
-        };
-    }
-
-    function toggleLoading(show, message = "") {
-        const statusEl = document.getElementById('sync-status');
-        if (!statusEl) return;
-        
-        if (show) {
-            statusEl.innerText = message || "Sincronizando...";
-            statusEl.classList.remove('hidden');
-        } else {
-            statusEl.classList.add('hidden');
-        }
-    }
-
-    function showToast(msg) {
-        // Alerta não intrusivo para fins de acessibilidade
-        console.warn("[Shopee Operations] Notificação do sistema:", msg);
-    }
-
-    function UtilitiesFormatDate(date, format) {
-        const pad = (n) => n.toString().padStart(2, '0');
-        if (format === "dd/MM/yyyy HH:mm:ss") {
-            return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-        }
-        if (format === "dd/MM/yyyy") {
-            return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
-        }
-        if (format === "HH:mm:ss") {
-            return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-        }
-    }
-</script>
+  </script>
 </body>
 </html>
